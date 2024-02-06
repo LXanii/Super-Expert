@@ -1,6 +1,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
+#include <Geode/modify/CreatorLayer.hpp>
 #include <string>
 
 using namespace geode::prelude;
@@ -43,14 +44,16 @@ CCLabelBMFont* lives_text;
 
 	void resetLevel() {
 		PlayLayer::resetLevel();
-		if (first_init) {
-			first_init = false; // fat retard rob
+		if (super_expert) {
+			if (first_init) {
+				first_init = false; // fat retard rob
+			}
+			else {
+				m_fields->lives_text->setString(std::to_string(lives).c_str());
+			}
+			log::info("Player has {} lives. resetLevel", lives);
+			lives--;
 		}
-		else {
-			m_fields->lives_text->setString(std::to_string(lives).c_str());
-		}
-		log::info("Player has {} lives. resetLevel", lives);
-		lives--;
 	}
 
 	void onQuit() {
@@ -64,10 +67,26 @@ CCLabelBMFont* lives_text;
 class $modify(PauseLayer) {
 	void onPracticeMode(cocos2d::CCObject* sender) {
 		if (super_expert) {
-			FLAlertLayer::create("Sorry!", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
+			FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
 		}
 		else {
-			onPracticeMode(sender);
+			PauseLayer::onPracticeMode(sender);
 		}
+	}
+};
+
+class $modify(CreatorLayer) {
+
+	CCSprite* expert_btn;
+
+	bool init() {
+		bool result = CreatorLayer::init();
+		auto director = CCDirector::sharedDirector();
+		auto size = director->getWinSize();
+		m_fields->expert_btn = CCSprite::create("super_expert_btn.png"_spr);
+		m_fields->expert_btn->setScale(0.8);
+		m_fields->expert_btn->setPosition({size.width / 2 + 182, size.height / 2 + 87});
+		addChild(m_fields->expert_btn);
+		return result;
 	}
 };
