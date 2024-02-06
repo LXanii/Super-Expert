@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/PauseLayer.hpp>
 #include <string>
 
 using namespace geode::prelude;
@@ -8,13 +9,17 @@ int lives = 30;
 bool super_expert = true;
 bool first_init = true;
 
+void resetLives() {
+	lives = 30;
+}
+
 class $modify(PlayLayer) {
 
 CCSprite* lives_img;
 CCLabelBMFont* lives_text;
 
 	bool init(GJGameLevel* level, bool first, bool second) {
-		bool result = PlayLayer::init(level,first,second);
+		bool result = PlayLayer::init(level, first, second);
 		log::info("Player has {} lives. init", lives);
 		if (super_expert) {
 
@@ -50,7 +55,19 @@ CCLabelBMFont* lives_text;
 
 	void onQuit() {
 		PlayLayer::onQuit();
+		resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
+	}
+};
+
+class $modify(PauseLayer) {
+	void onPracticeMode(cocos2d::CCObject* sender) {
+		if (super_expert) {
+			FLAlertLayer::create("Sorry!", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
+		}
+		else {
+			onPracticeMode(sender);
+		}
 	}
 };
