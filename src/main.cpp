@@ -47,4 +47,10 @@ CCLabelBMFont* lives_text;
 		log::info("Player has {} lives. resetLevel", lives);
 		lives--;
 	}
+
+	void onQuit() {
+		PlayLayer::onQuit();
+		first_init = true;
+		log::info("quit true");
+	}
 };
