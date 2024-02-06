@@ -2,6 +2,9 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CreatorLayer.hpp>
+
+#include "ExpertMapLayer.hpp"
+
 #include <string>
 
 using namespace geode::prelude;
@@ -75,18 +78,27 @@ class $modify(PauseLayer) {
 	}
 };
 
-class $modify(CreatorLayer) {
-
-	CCSprite* expert_btn;
-
+class $modify(ExpertCallback, CreatorLayer) {
 	bool init() {
 		bool result = CreatorLayer::init();
 		auto director = CCDirector::sharedDirector();
 		auto size = director->getWinSize();
-		m_fields->expert_btn = CCSprite::create("super_expert_btn.png"_spr);
-		m_fields->expert_btn->setScale(0.8);
-		m_fields->expert_btn->setPosition({size.width / 2 + 182, size.height / 2 + 87});
-		addChild(m_fields->expert_btn);
+
+		CCMenu* menu = CCMenu::create();
+
+		menu->setScale(0.8);
+		menu->setPosition({size.width / 2 + 182, size.height / 2 + 87});
+		
+		menu->addChild(CCMenuItemSpriteExtra::create(
+            CCSprite::create("super_expert_btn.png"_spr),
+            this, menu_selector(ExpertCallback::onExpert)
+        ));
+
+		addChild(menu);
 		return result;
 	}
+
+	void onExpert(CCObject*) {
+        ExpertMapLayer::scene();
+    }
 };

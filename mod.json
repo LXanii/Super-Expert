@@ -1,0 +1,14 @@
+{
+	"geode": "2.0.0",
+	"version": "v1.0.0",
+	"gd": "2.204",
+	"id": "xanii.super_expert",
+	"name": "Super Expert",
+	"developer": "Xanii, Zaff & AdyaGD",
+	"description": "",
+	"resources": {
+        "sprites": [
+            "resources/*.png"
+        ]
+    }
+}
