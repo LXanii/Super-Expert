@@ -1,3 +1,1 @@
-# OptimizedSongSize
-
-This is where she makes a mod.
+Guys don't forget to update the re3adme beforfe posting.. :" _)
