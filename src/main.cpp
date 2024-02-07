@@ -9,9 +9,9 @@
 
 using namespace geode::prelude;
 
-int lives = 30;
-bool super_expert = true;
 bool first_init = true;
+extern int lives;
+extern bool super_expert;
 
 void resetLives() {
 	lives = 30;
@@ -61,7 +61,7 @@ CCLabelBMFont* lives_text;
 
 	void onQuit() {
 		PlayLayer::onQuit();
-		resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		//resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
 	}
@@ -79,20 +79,26 @@ class $modify(PauseLayer) {
 };
 
 class $modify(ExpertCallback, CreatorLayer) {
+
 	bool init() {
 		bool result = CreatorLayer::init();
 		auto director = CCDirector::sharedDirector();
 		auto size = director->getWinSize();
+		auto creatorButtons = this->getChildByID("creator-buttons-menu");
 
 		CCMenu* menu = CCMenu::create();
 
+		CCMenuItemSpriteExtra* versusButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("versus-button"));
+
+		versusButton->setVisible(false);
+
 		menu->setScale(0.8);
-		menu->setPosition({size.width / 2 + 182, size.height / 2 + 87});
+		menu->setPosition(versusButton->convertToWorldSpace(getPosition()));
+		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.2f});
 		
 		menu->addChild(CCMenuItemSpriteExtra::create(
             CCSprite::create("super_expert_btn.png"_spr),
-            this, menu_selector(ExpertCallback::onExpert)
-        ));
+            this, menu_selector(ExpertCallback::onExpert)));
 
 		addChild(menu);
 		return result;
