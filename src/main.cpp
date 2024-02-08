@@ -2,6 +2,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CreatorLayer.hpp>
+#include <Geode/modify/LevelInfoLayer.hpp>
 
 #include "ExpertMapLayer.hpp"
 
@@ -94,7 +95,7 @@ class $modify(ExpertCallback, CreatorLayer) {
 
 		menu->setScale(0.8);
 		menu->setPosition(versusButton->convertToWorldSpace(getPosition()));
-		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.2f});
+		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.5f});
 		
 		menu->addChild(CCMenuItemSpriteExtra::create(
             CCSprite::create("super_expert_btn.png"_spr),
@@ -107,4 +108,14 @@ class $modify(ExpertCallback, CreatorLayer) {
 	void onExpert(CCObject*) {
         ExpertMapLayer::scene();
     }
+};
+
+class $modify(StartupCallback, LevelInfoLayer) {
+	void onUpdate(cocos2d::CCObject* sender) {
+		StartupCallback::onMap(m_level);
+	}
+
+	void onMap(CCObject*) {
+		ExpertStartupLayer::scene(m_level);
+	}
 };
