@@ -83,8 +83,6 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
     auto bounceOutAction = CCEaseBackOut::create(scaleUpAction);
     lives_txt->runAction(CCSequence::createWithTwoActions(CCDelayTime::create(1.f), bounceOutAction));
 
-    FMODAudioEngine::playEffect("playSound_01.ogg");
-
     auto loadLevel = CCCallFunc::create(this, callfunc_selector(ExpertStartupLayer::loadLevel));
     runAction(CCSequence::createWithTwoActions(CCDelayTime::create(3.f), loadLevel));
 
