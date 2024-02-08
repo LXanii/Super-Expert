@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Geode/DefaultInclude.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 #include <cocos2d.h>
 
 using namespace geode::prelude;
@@ -16,6 +17,7 @@ public:
 
     void onStartLevel(CCObject*);
     void onGoBack(CCObject*);
+    void loadLevel();
 
     GJGameLevel* m_level;
 };
@@ -49,7 +51,7 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
     GameManager* manager = GameManager::sharedState();
     
     SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
-    player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
+    player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
     player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
 	player->updateColors();
     if (manager->getPlayerGlow()) player->enableCustomGlowColor(manager->colorForIdx(manager->getPlayerGlowColor()));
@@ -74,14 +76,23 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
 
     lives_x->setOpacity(0);
     auto fadeInAction = CCFadeIn::create(0.5f);
-    lives_x->runAction(fadeInAction);
+    lives_x->runAction(CCSequence::createWithTwoActions(CCDelayTime::create(1.f), fadeInAction));
 
-    lives_txt->setScale(0.1f);
+    lives_txt->setScale(0.f);
     auto scaleUpAction = CCScaleTo::create(0.5f, 1.625f);
     auto bounceOutAction = CCEaseBackOut::create(scaleUpAction);
-    lives_txt->runAction(bounceOutAction);
+    lives_txt->runAction(CCSequence::createWithTwoActions(CCDelayTime::create(1.f), bounceOutAction));
+
+    FMODAudioEngine::playEffect("playSound_01.ogg");
+
+    auto loadLevel = CCCallFunc::create(this, callfunc_selector(ExpertStartupLayer::loadLevel));
+    runAction(CCSequence::createWithTwoActions(CCDelayTime::create(3.f), loadLevel));
 
     return true;
+}
+
+void ExpertStartupLayer::loadLevel() {
+    CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, PlayLayer::scene(m_level, false, false)));
 }
 
 void ExpertStartupLayer::keyBackClicked() {

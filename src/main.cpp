@@ -1,9 +1,10 @@
 #include <Geode/Geode.hpp>
-#include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CreatorLayer.hpp>
+#include <Geode/modify/LevelInfoLayer.hpp>
 
 #include "ExpertMapLayer.hpp"
+#include "ExpertStartupLayer.hpp"
 
 #include <string>
 
@@ -106,5 +107,31 @@ class $modify(ExpertCallback, CreatorLayer) {
 
 	void onExpert(CCObject*) {
         ExpertMapLayer::scene();
+    }
+};
+
+class $modify(ExpertCallback1, LevelInfoLayer) {
+
+	bool init(GJGameLevel* level, bool hi) {
+		bool result = LevelInfoLayer::init(level, hi);
+		auto director = CCDirector::sharedDirector();
+		auto size = director->getWinSize();
+
+		CCMenu* menu = CCMenu::create();
+
+		menu->setScale(0.8);
+		menu->setPosition({size.width / 2, size.height / 2});
+		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.2f});
+		
+		menu->addChild(CCMenuItemSpriteExtra::create(
+            CCSprite::create("super_expert_btn.png"_spr),
+            this, menu_selector(ExpertCallback1::onExpert)));
+
+		addChild(menu);
+		return result;
+	}
+
+	void onExpert(CCObject*) {
+        ExpertStartupLayer::scene(m_level);
     }
 };
