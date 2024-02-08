@@ -6,6 +6,8 @@
 
 using namespace geode::prelude;
 
+int lives = 30;
+
 class ExpertStartupLayer : public CCLayer {
 protected:
     bool init(GJGameLevel*);
