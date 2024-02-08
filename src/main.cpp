@@ -95,7 +95,7 @@ class $modify(ExpertCallback, CreatorLayer) {
 
 		menu->setScale(0.8);
 		menu->setPosition(versusButton->convertToWorldSpace(getPosition()));
-		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.2f});
+		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.5f});
 		
 		menu->addChild(CCMenuItemSpriteExtra::create(
             CCSprite::create("super_expert_btn.png"_spr),
@@ -110,28 +110,12 @@ class $modify(ExpertCallback, CreatorLayer) {
     }
 };
 
-class $modify(ExpertCallback1, LevelInfoLayer) {
-
-	bool init(GJGameLevel* level, bool hi) {
-		bool result = LevelInfoLayer::init(level, hi);
-		auto director = CCDirector::sharedDirector();
-		auto size = director->getWinSize();
-
-		CCMenu* menu = CCMenu::create();
-
-		menu->setScale(0.8);
-		menu->setPosition({size.width / 2, size.height / 2});
-		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.2f});
-		
-		menu->addChild(CCMenuItemSpriteExtra::create(
-            CCSprite::create("super_expert_btn.png"_spr),
-            this, menu_selector(ExpertCallback1::onExpert)));
-
-		addChild(menu);
-		return result;
+class $modify(StartupCallback, LevelInfoLayer) {
+	void onUpdate(cocos2d::CCObject* sender) {
+		StartupCallback::onMap(m_level);
 	}
 
-	void onExpert(CCObject*) {
-        ExpertStartupLayer::scene(m_level);
-    }
+	void onMap(CCObject*) {
+		ExpertStartupLayer::scene(m_level);
+	}
 };
