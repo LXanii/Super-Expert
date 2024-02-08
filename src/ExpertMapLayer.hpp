@@ -4,9 +4,11 @@
 #include <cocos2d.h>
 #include <Geode/Geode.hpp>
 
+#include "ExpertStartupLayer.hpp"
+
 using namespace geode::prelude;
 
-int lives = 30;
+extern int lives;
 bool super_expert = false;
 
 class ExpertMapLayer : public CCLayer {
