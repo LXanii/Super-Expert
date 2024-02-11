@@ -2,6 +2,7 @@
 
 #include <Geode/DefaultInclude.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/GameLevelManager.hpp>
 #include <cocos2d.h>
 
 using namespace geode::prelude;
