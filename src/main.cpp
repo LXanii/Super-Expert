@@ -1,10 +1,10 @@
 #include <Geode/Geode.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CreatorLayer.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 
 #include "ExpertMapLayer.hpp"
-#include "ExpertStartupLayer.hpp"
 
 #include <string>
 
@@ -22,25 +22,38 @@ class $modify(PlayLayer) {
 
 CCSprite* lives_img;
 CCLabelBMFont* lives_text;
+CCLabelBMFont* lives_text_x;
 
 	bool init(GJGameLevel* level, bool first, bool second) {
 		bool result = PlayLayer::init(level, first, second);
 		log::info("Player has {} lives. init", lives);
 		if (super_expert) {
 
+			
 			m_fields->lives_text = CCLabelBMFont::create(std::to_string(lives + 1).c_str(), "gjFont59.fnt");
+			m_fields->lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
 
-			m_fields->lives_img = CCSprite::create("lives_count.png"_spr);
-			m_fields->lives_img->setScale(0.6);
-			m_fields->lives_img->setOpacity(200);
-			m_fields->lives_img->setPosition({17,12});
+			GameManager* manager = GameManager::sharedState();
+    
+			SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
+			player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
+			player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
+			player->updateColors();
+
+			player->setPosition({11,12});
+			player->setScale(0.65);
+			addChild(player, 2);
 
 			m_fields->lives_text->setScale(0.6);
 			m_fields->lives_text->setOpacity(200);
-			m_fields->lives_text->setPosition({m_fields->lives_img->getPositionX() + 26,m_fields->lives_img->getPositionY() - 1.8f});
+			m_fields->lives_text->setPosition({player->getPositionX() + 35,player->getPositionY() - 1.8f});
 
-			addChild(m_fields->lives_img);
+			m_fields->lives_text_x->setScale(0.6);
+			m_fields->lives_text_x->setOpacity(200);
+			m_fields->lives_text_x->setPosition({m_fields->lives_text->getPositionX() - 18, m_fields->lives_text->getPositionY()});
+
 			addChild(m_fields->lives_text);
+			addChild(m_fields->lives_text_x);
 			
 		}
 		return result;
