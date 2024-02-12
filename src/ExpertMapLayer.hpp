@@ -5,6 +5,7 @@
 #include <cocos2d.h>
 #include <Geode/Geode.hpp>
 #include <random>
+#include <string>
 
 #include "ExpertStartupLayer.hpp"
 
@@ -43,6 +44,7 @@ public:
     CCLabelBMFont* dl_txt;
     CCMenuItemSpriteExtra* startBtn;
     int dl_count;
+    std::string sharelevels;
 };
 
 bool ExpertMapLayer::init() {
@@ -156,6 +158,10 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     dl_txt->setString(fmt::format("Levels Downloaded: {}/15", dl_count).c_str());
     if (dl_count < 15) {
         downloadLevels();
+        sharelevels += leveldata[1] + ";";
+    }
+    else {
+        sharelevels += leveldata[1];
     }
 }
 
