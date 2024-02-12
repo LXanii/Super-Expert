@@ -18,7 +18,6 @@ public:
     static ExpertStartupLayer* create(GJGameLevel* level);
     static ExpertStartupLayer* scene(GJGameLevel* level);
 
-    void onStartLevel(CCObject*);
     void onGoBack(CCObject*);
     void loadLevel();
 

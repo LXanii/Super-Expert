@@ -24,28 +24,48 @@ std::vector<std::string> splitString(const std::string& s, char delimiter) {
     return tokens;
 }
 
-class ExpertMapLayer : public CCLayer {
-
+class ExpertMapLayer : public CCLayer, LevelDownloadDelegate {
 protected:
     bool init() override;
     void keyBackClicked() override;
     
 
 public:
+    virtual void levelDownloadFinished(GJGameLevel*);
+    virtual void levelDownloadFailed(int);
+
     static ExpertMapLayer* create();
     static ExpertMapLayer* scene();
 
     void onGoBack(CCObject*);
     void start_expert_run(CCObject*);
     void end_expert_run(CCObject*);
+    void downloadLevel(CCObject*);
     void downloadLevels();
+    void addMap();
     void ondownloadfinished(std::string const&);
 
     CCLabelBMFont* dl_txt;
     CCMenuItemSpriteExtra* startBtn;
     int dl_count;
     std::string sharelevels;
+    std::vector<int> ids;
 };
+
+void ExpertMapLayer::downloadLevel(CCObject* self) {
+    log::info("{}", self->getTag());
+    GameLevelManager::sharedState()->m_levelDownloadDelegate = this;
+    GameLevelManager::sharedState()->downloadLevel(self->getTag(), true); // fuck you rob
+}
+
+void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
+    log::info("yay");
+    ExpertStartupLayer::scene(level);
+}
+
+void ExpertMapLayer::levelDownloadFailed(int p0) {
+    log::info("nay");
+}
 
 bool ExpertMapLayer::init() {
     if (!CCLayer::init())
@@ -103,6 +123,26 @@ bool ExpertMapLayer::init() {
     start_game_text->setPosition(85,18);
     start_game_text->setScale(0.68);
 
+    addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
+    addChild(lives_text);
+    addChild(lives_img);
+    addChild(back_btn_menu);
+    addChild(dl_txt);
+    back_btn_menu->addChild(backBtn);
+    if (!super_expert) {
+        addChild(start_btn_menu);
+        start_btn_menu->addChild(startBtn);
+        startBtn->addChild(start_game_text);
+    }
+    else {
+        addChild(end_run_btn_menu);
+        end_run_btn_menu->addChild(endRunBtn);
+    }
+
+    return true;
+}
+
+void ExpertMapLayer::addMap() {
     CCMenu* dotsmenu = CCMenu::create();
 
     CCMenuItemSpriteExtra* castleBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
@@ -117,12 +157,15 @@ bool ExpertMapLayer::init() {
     };
 
     std::vector<CCMenuItemSpriteExtra*> stageButtons;
+    int i = 0;
 
     for (const auto& coord : stageCoordinates) {
-        CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
+        CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, menu_selector(ExpertMapLayer::downloadLevel));
         stageBtn->setPosition(coord);
+        stageBtn->setTag(ids[i]);
         stageButtons.push_back(stageBtn);
         dotsmenu->addChild(stageBtn);
+        i++;
     }
 
     CCMenuItemSpriteExtra* castleEndBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
@@ -130,25 +173,7 @@ bool ExpertMapLayer::init() {
     dotsmenu->addChild(castleEndBtn);
 
     dotsmenu->setPosition({29, 29});
-
-    addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
-    addChild(lives_text);
-    addChild(lives_img);
-    addChild(back_btn_menu);
-    addChild(dl_txt);
     addChild(dotsmenu);
-    back_btn_menu->addChild(backBtn);
-    if (!super_expert) {
-        addChild(start_btn_menu);
-        start_btn_menu->addChild(startBtn);
-        startBtn->addChild(start_game_text);
-    }
-    else {
-        addChild(end_run_btn_menu);
-        end_run_btn_menu->addChild(endRunBtn);
-    }
-
-    return true;
 }
 
 void ExpertMapLayer::start_expert_run(CCObject*) {
@@ -187,9 +212,12 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     if (dl_count < 15) {
         downloadLevels();
         sharelevels += leveldata[1] + ";";
+        ids.push_back(std::stoi(leveldata[1]));
     }
     else {
         sharelevels += leveldata[1];
+        ids.push_back(std::stoi(leveldata[1]));
+        addMap();
     }
 }
 
