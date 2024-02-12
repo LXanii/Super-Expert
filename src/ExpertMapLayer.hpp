@@ -84,7 +84,6 @@ bool ExpertMapLayer::init() {
     back_btn_menu->setPosition(size.width / 2 - 261, size.height - 30); // exit button position
     end_run_btn_menu->setPosition({back_btn_menu->getPositionX(), back_btn_menu->getPositionY() - 20});
 
-
     expert_run_bg->setPosition({size.width / 2, size.height / 2});
     expert_run_bg->setScale(1.2);
     expert_run_bg->setColor(ccColor3B(167,15,224));
@@ -102,11 +101,40 @@ bool ExpertMapLayer::init() {
     start_game_text->setPosition(85,18);
     start_game_text->setScale(0.68);
 
+    CCMenu* dotsmenu = CCMenu::create();
+
+    CCMenuItemSpriteExtra* castleBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
+    castleBtn->setPosition({95, 90});
+    dotsmenu->addChild(castleBtn);
+
+    // thanks chatgpt
+    std::vector<CCPoint> stageCoordinates = {
+        {135, 45}, {175, 45}, {215, 45}, {255, 45}, {282, 45}, {255, 100},
+        {215, 100}, {175, 100}, {147, 127}, {175, 155}, {215, 155},
+        {255, 155}, {295, 155}, {335, 155}, {375, 155}
+    };
+
+    std::vector<CCMenuItemSpriteExtra*> stageButtons;
+
+    for (const auto& coord : stageCoordinates) {
+        CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
+        stageBtn->setPosition(coord);
+        stageButtons.push_back(stageBtn);
+        dotsmenu->addChild(stageBtn);
+    }
+
+    CCMenuItemSpriteExtra* castleEndBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
+    castleEndBtn->setPosition({420, 195});
+    dotsmenu->addChild(castleEndBtn);
+
+    dotsmenu->setPosition({29, 29});
+
     addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
     addChild(lives_text);
     addChild(lives_img);
     addChild(back_btn_menu);
     addChild(dl_txt);
+    addChild(dotsmenu);
     back_btn_menu->addChild(backBtn);
     if (!super_expert) {
         addChild(start_btn_menu);
