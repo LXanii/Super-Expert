@@ -12,7 +12,7 @@
 using namespace geode::prelude;
 
 extern int lives;
-bool super_expert = false;
+bool super_expert = true;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -78,7 +78,7 @@ bool ExpertMapLayer::init() {
 
     CCSprite* expert_run_bg = CCSprite::create("game_bg_08_001.png");
     CCLabelBMFont* lives_text = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
-    CCSprite* lives_img = CCSprite::create("lives_count.png"_spr);
+	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "goldFont.fnt");
     dl_count = 0;
 
@@ -113,11 +113,24 @@ bool ExpertMapLayer::init() {
     end_run_btn_menu->setScale(0.7);
     end_run_btn_menu->setPosition({end_run_btn_menu->getPositionX() - 85, end_run_btn_menu->getPositionY() - 70});
 
-    lives_img->setScale(0.6);
-    lives_img->setPosition({17,12});
+    GameManager* manager = GameManager::sharedState();
+
+    SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
+    player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
+    player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
+    player->updateColors();
+
+    player->setPosition({11,12});
+    player->setScale(0.65);
+    addChild(player, 2);
 
     lives_text->setScale(0.6);
-    lives_text->setPosition({lives_img->getPositionX() + 26,lives_img->getPositionY() - 1.8f});
+    lives_text->setOpacity(200);
+    lives_text->setPosition({player->getPositionX() + 35,player->getPositionY() - 1.8f});
+
+    lives_text_x->setScale(0.6);
+    lives_text_x->setOpacity(200);
+    lives_text_x->setPosition({lives_text->getPositionX() - 18, lives_text->getPositionY()});
 
     start_btn_menu->setPosition({462, lives_text->getPositionY() + 8});
     start_game_text->setPosition(85,18);
@@ -125,7 +138,7 @@ bool ExpertMapLayer::init() {
 
     addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
     addChild(lives_text);
-    addChild(lives_img);
+    addChild(lives_text_x);
     addChild(back_btn_menu);
     addChild(dl_txt);
     back_btn_menu->addChild(backBtn);
@@ -151,7 +164,7 @@ void ExpertMapLayer::addMap() {
 
     // thanks chatgpt
     std::vector<CCPoint> stageCoordinates = {
-        {135, 45}, {175, 45}, {215, 45}, {255, 45}, {282, 45}, {255, 100},
+        {135, 45}, {175, 45}, {215, 45}, {255, 45}, {282, 72}, {255, 100},
         {215, 100}, {175, 100}, {147, 127}, {175, 155}, {215, 155},
         {255, 155}, {295, 155}, {335, 155}, {375, 155}
     };
