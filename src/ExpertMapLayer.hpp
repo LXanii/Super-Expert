@@ -13,6 +13,7 @@ using namespace geode::prelude;
 
 extern int lives;
 bool super_expert = true;
+std::vector<int> ids;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -49,7 +50,6 @@ public:
     CCMenuItemSpriteExtra* startBtn;
     int dl_count;
     std::string sharelevels;
-    std::vector<int> ids;
 };
 
 void ExpertMapLayer::downloadLevel(CCObject* self) {
@@ -148,6 +148,7 @@ bool ExpertMapLayer::init() {
         startBtn->addChild(start_game_text);
     }
     else {
+        addMap();
         addChild(end_run_btn_menu);
         end_run_btn_menu->addChild(endRunBtn);
     }

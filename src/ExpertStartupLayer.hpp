@@ -92,7 +92,7 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
 }
 
 void ExpertStartupLayer::loadLevel() {
-    CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, PlayLayer::scene(m_level, false, false)));
+    CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, PlayLayer::scene(m_level, false, false)));
 }
 
 void ExpertStartupLayer::keyBackClicked() {
