@@ -12,7 +12,7 @@
 using namespace geode::prelude;
 
 extern int lives;
-bool super_expert = true;
+bool super_expert = false;
 std::vector<int> ids;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
