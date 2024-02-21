@@ -7,10 +7,10 @@
     		},
 	"id": "xanii.super_expert",
 	"name": "Super Expert",
-	"developers": {
+	"developers": [
 		"Xanii", 
 		"AdyaGD"
-	}
+		],
 	"description": "",
 	"resources": {
         "sprites": [
