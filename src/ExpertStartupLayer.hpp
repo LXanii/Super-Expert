@@ -64,7 +64,7 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
     lives_x->setPosition({size.width / 2 + 59.f, size.height / 2 + 26.f});
     lives_x->setScale(0.750f);
 
-    CCLabelBMFont* lives_txt = CCLabelBMFont::create("30", "gjFont59.fnt");
+    CCLabelBMFont* lives_txt = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
     lives_txt->setPosition({size.width / 2 + 99.5f, size.height / 2 + 22.5f});
     lives_txt->setScale(1.625f);
     
