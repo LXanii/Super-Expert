@@ -50,6 +50,7 @@ public:
     CCMenuItemSpriteExtra* startBtn;
     int dl_count;
     std::string sharelevels;
+    CCMenu* end_run_btn_menu;
 };
 
 void ExpertMapLayer::downloadLevel(CCObject* self) {
@@ -71,6 +72,7 @@ bool ExpertMapLayer::init() {
     if (!CCLayer::init())
         return false;
 
+    GameManager* manager = GameManager::sharedState();
     auto director = CCDirector::sharedDirector();
 	auto size = director->getWinSize();
     
@@ -79,17 +81,19 @@ bool ExpertMapLayer::init() {
     CCSprite* expert_run_bg = CCSprite::create("game_bg_08_001.png");
     CCLabelBMFont* lives_text = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
 	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
-    CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "goldFont.fnt");
+    CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
+    CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
     dl_count = 0;
 
     dl_txt = CCLabelBMFont::create("Levels Downloaded: 0/15", "bigFont.fnt");
-    dl_txt->setPosition({size.width/2, size.height/2});
+    dl_txt->setPosition({size.width/ 2, size.height/ 2});
     dl_txt->setVisible(false);
-    dl_txt->setScale(0.5);
+    dl_txt->setScale(0.75);
 
     CCMenu* back_btn_menu = CCMenu::create();
     CCMenu* start_btn_menu = CCMenu::create();
-    CCMenu* end_run_btn_menu = CCMenu::create();
+    
+    end_run_btn_menu = CCMenu::create();
 
     auto backBtn = CCMenuItemSpriteExtra::create(
         CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"),
@@ -103,8 +107,29 @@ bool ExpertMapLayer::init() {
         CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png"),
         this, menu_selector(ExpertMapLayer::end_expert_run));
 
+	auto bottomLeft = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
+	auto topRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
+	auto bottomRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
+
+	topRight->setFlipY(true);
+	topRight->setFlipX(true);
+	bottomRight->setFlipX(true);
+
+	CCSize img_size = bottomLeft->getScaledContentSize();
+
+	bottomLeft->setPosition({ img_size.width / 2, img_size.height / 2 });
+	topRight->setPosition({ (size.width) - (img_size.width / 2), (size.height) - (img_size.height / 2) });
+	bottomRight->setPosition({ (size.width) - (img_size.width / 2), img_size.height / 2 });
+
+	addChild(bottomLeft, 1);
+	addChild(topRight, 1);
+	addChild(bottomRight, 1); // thanks fig
+
     back_btn_menu->setPosition(size.width / 2 - 261, size.height - 30); // exit button position
     end_run_btn_menu->setPosition({back_btn_menu->getPositionX(), back_btn_menu->getPositionY() - 20});
+
+    super_expert_lbl->setPosition({start_btn_menu->getPositionX(), back_btn_menu->getPositionY()});
+    super_expert_lbl->setScale(1.2);
 
     expert_run_bg->setPosition({size.width / 2, size.height / 2});
     expert_run_bg->setScale(1.2);
@@ -113,14 +138,13 @@ bool ExpertMapLayer::init() {
     end_run_btn_menu->setScale(0.7);
     end_run_btn_menu->setPosition({end_run_btn_menu->getPositionX() - 85, end_run_btn_menu->getPositionY() - 70});
 
-    GameManager* manager = GameManager::sharedState();
 
     SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
     player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
     player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
     player->updateColors();
 
-    player->setPosition({11,12});
+    player->setPosition({91,12});
     player->setScale(0.65);
     addChild(player, 2);
 
@@ -132,15 +156,19 @@ bool ExpertMapLayer::init() {
     lives_text_x->setOpacity(200);
     lives_text_x->setPosition({lives_text->getPositionX() - 18, lives_text->getPositionY()});
 
-    start_btn_menu->setPosition({462, lives_text->getPositionY() + 8});
-    start_game_text->setPosition(85,18);
-    start_game_text->setScale(0.68);
+    start_btn_menu->setPosition({size.width/ 2, size.height/ 2});
+    start_game_text->setPosition(85,17);
+    start_game_text->setScale(0.5);
 
     addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
     addChild(lives_text);
     addChild(lives_text_x);
     addChild(back_btn_menu);
     addChild(dl_txt);
+    addChild(end_run_btn_menu);
+    addChild(super_expert_lbl);
+    end_run_btn_menu->addChild(endRunBtn);
+    end_run_btn_menu->setVisible(false);
     back_btn_menu->addChild(backBtn);
     if (!super_expert) {
         addChild(start_btn_menu);
@@ -149,8 +177,6 @@ bool ExpertMapLayer::init() {
     }
     else {
         addMap();
-        addChild(end_run_btn_menu);
-        end_run_btn_menu->addChild(endRunBtn);
     }
 
     return true;
@@ -194,6 +220,7 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
     super_expert = true;
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
+    end_run_btn_menu->setVisible(true);
 
     downloadLevels();
 }
@@ -231,13 +258,17 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     else {
         sharelevels += leveldata[1];
         ids.push_back(std::stoi(leveldata[1]));
+        dl_txt->setVisible(false);
         addMap();
     }
 }
 
 void ExpertMapLayer::end_expert_run(CCObject*) {
     super_expert = false;
-    FLAlertLayer::create("End Run", "Would you like to <cr>end your run</c>?", "OK")->show();
+    //FLAlertLayer* end_run = FLAlertLayer::create("End Run", "Press <cy>OK</c> to <cr>end your run</c>.", "OK");
+    //end_run->show();
+    lives = 30;
+    ExpertMapLayer::keyBackClicked();
 }
 
 
