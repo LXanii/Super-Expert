@@ -40,24 +40,13 @@ SimplePlayer* lives_2;
 		if (super_expert) {
 			if (!level_started) {
 				level_started = true;
-				extra_lives = 2;
+				extra_lives = 1;
 			}
 
 			log::info("{}", extra_lives);
 
-			m_fields->empty_live_1 = CCSprite::createWithSpriteFrameName("uiDot_001.png");
-			m_fields->empty_live_1->setPosition({120,12});
-			addChild(m_fields->empty_live_1, 10);
-			m_fields->empty_live_1->setVisible(false);
-
-			m_fields->empty_live_2 = CCSprite::createWithSpriteFrameName("uiDot_001.png");
-			m_fields->empty_live_2->setPosition({93,12});
-			addChild(m_fields->empty_live_2, 10);
-			m_fields->empty_live_2->setVisible(false);
-
 			m_fields->lives_text = CCLabelBMFont::create(std::to_string(lives + 1).c_str(), "gjFont59.fnt");
 			m_fields->lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
-			m_fields->lives_bracket = CCLabelBMFont::create("[            ]", "gjFont59.fnt");
 
 			GameManager* manager = GameManager::sharedState();
     
@@ -71,34 +60,9 @@ SimplePlayer* lives_2;
 			player->setOpacity(200);
 			addChild(player, 2);
 
-			SimplePlayer* lives_1 = SimplePlayer::create(manager->getPlayerFrame());
-			lives_1->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
-			lives_1->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
-			lives_1->updateColors();
-
-			lives_1->setPosition({93,12});
-			lives_1->setScale(0.65);
-			lives_1->setOpacity(200);
-			this->addChild(lives_1, 2);
-			
-			SimplePlayer* lives_2 = SimplePlayer::create(manager->getPlayerFrame());
-			lives_2->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
-			lives_2->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
-			lives_2->updateColors();
-
-			lives_2->setPosition({120,12});
-			lives_2->setScale(0.65);
-			lives_2->setOpacity(200);
-			addChild(lives_2, 2);
-			addChild(m_fields->empty_live_1);
-
 			m_fields->lives_text->setScale(0.6);
 			m_fields->lives_text->setOpacity(200);
 			m_fields->lives_text->setPosition({player->getPositionX() + 35,player->getPositionY() - 1.8f});
-
-			m_fields->lives_bracket->setScale(0.6);
-			m_fields->lives_bracket->setOpacity(200);
-			m_fields->lives_bracket->setPosition({m_fields->lives_text->getPositionX() + 60, m_fields->lives_text->getPositionY() + 1});
 
 			m_fields->lives_text_x->setScale(0.6);
 			m_fields->lives_text_x->setOpacity(200);
@@ -106,7 +70,6 @@ SimplePlayer* lives_2;
 
 			addChild(m_fields->lives_text, 100);
 			addChild(m_fields->lives_text_x, 100);
-			addChild(m_fields->lives_bracket, 100);
 			
 		}
 		return result;
@@ -125,34 +88,18 @@ SimplePlayer* lives_2;
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
 			log::info("{}", extra_lives);
-		if (level_started) {
-
-			SimplePlayer* live_1 = static_cast<SimplePlayer*>(getChildren()->objectAtIndex(8));
-			SimplePlayer* live_2 = static_cast<SimplePlayer*>(getChildren()->objectAtIndex(7));
-			if (extra_lives != 0) {
-				extra_lives--;
-				switch(extra_lives) {
-					case 0:
-						removeChild(live_2);
-						m_fields->empty_live_2->setVisible(true);
-						break;
-					case 1:
-						removeChild(live_1);
-						m_fields->empty_live_1->setVisible(true);
-						break;
+			if (level_started) {
+					log::info("level_started");
+					}
 				}
 			}
-		}	
-	}
-}
 
 	void onQuit() {
 		//resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
 		if (super_expert) {
-			//ExpertMapLayer::scene();
-			PlayLayer::onQuit();
+			ExpertMapLayer::scene();
 		} else {
 			PlayLayer::onQuit();
 		}
@@ -212,8 +159,10 @@ class $modify(StartupCallback, LevelInfoLayer) {
 };
 
 class $modify(EndLevelLayer) {
-	void create() { // find whatever gets called when u hit the end
-		EndLevelLayer::create();
-		log::info("menu");
+	void showLayer(bool p0) { // find whatever gets called when u hit the end
+		EndLevelLayer::showLayer(p0);
+		//if (extra_lives > 0) lives += extra_lives;
+		level_started = false;
+		lives += 1; // compensate for completion
 	}
 };
