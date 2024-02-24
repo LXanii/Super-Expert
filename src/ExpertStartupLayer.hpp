@@ -92,7 +92,7 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
 }
 
 void ExpertStartupLayer::loadLevel() {
-    CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, PlayLayer::scene(m_level, false, false)));
+    CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, PlayLayer::scene(m_level, false, false)));
 }
 
 void ExpertStartupLayer::keyBackClicked() {
@@ -118,7 +118,7 @@ ExpertStartupLayer* ExpertStartupLayer::scene(GJGameLevel* level) {
     auto scene = CCScene::create();
     scene->addChild(layer);
     auto transition = CCTransitionFade::create(0.5f, scene);
-    CCDirector::sharedDirector()->pushScene(transition);
+    CCDirector::sharedDirector()->replaceScene(transition);
 
     return layer;
 }

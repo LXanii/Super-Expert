@@ -15,6 +15,7 @@ int current_level = 0;
 extern int lives;
 bool super_expert = false;
 std::vector<int> ids;
+extern bool downloading;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -38,6 +39,7 @@ public:
 
     static ExpertMapLayer* create();
     static ExpertMapLayer* scene();
+    static ExpertMapLayer* replaceScene();
 
     void onGoBack(CCObject*);
     void start_expert_run(CCObject*);
@@ -46,6 +48,7 @@ public:
     void downloadLevels();
     void addMap();
     void ondownloadfinished(std::string const&);
+    void expertReset();
 
     CCLabelBMFont* dl_txt;
     CCMenuItemSpriteExtra* startBtn;
@@ -61,17 +64,18 @@ void ExpertMapLayer::downloadLevel(CCObject* self) {
 }
 
 void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
-    log::info("yay");
     ExpertStartupLayer::scene(level);
 }
 
 void ExpertMapLayer::levelDownloadFailed(int p0) {
-    log::info("nay");
+    downloading = false;
 }
 
 bool ExpertMapLayer::init() {
     if (!CCLayer::init())
         return false;
+
+    if (lives <= 0) expertReset();
 
     GameManager* manager = GameManager::sharedState();
     auto director = CCDirector::sharedDirector();
@@ -134,7 +138,7 @@ bool ExpertMapLayer::init() {
 
     expert_run_bg->setPosition({size.width / 2, size.height / 2});
     expert_run_bg->setScale(1.2);
-    expert_run_bg->setColor(ccColor3B(167,15,224));
+    expert_run_bg->setColor(ccColor3B(43,57,96));
 
     end_run_btn_menu->setScale(0.7);
     end_run_btn_menu->setPosition({end_run_btn_menu->getPositionX() - 85, end_run_btn_menu->getPositionY() - 70});
@@ -169,9 +173,9 @@ bool ExpertMapLayer::init() {
     addChild(end_run_btn_menu);
     addChild(super_expert_lbl);
     end_run_btn_menu->addChild(endRunBtn);
-    end_run_btn_menu->setVisible(false);
     back_btn_menu->addChild(backBtn);
     if (!super_expert) {
+        end_run_btn_menu->setVisible(false);
         addChild(start_btn_menu);
         start_btn_menu->addChild(startBtn);
         startBtn->addChild(start_game_text);
@@ -210,22 +214,27 @@ void ExpertMapLayer::addMap() {
         {188, 155}, {243, 155}, {298, 155}, {353, 155}, {408, 155}
     };
 
-    std::vector<CCMenuItemSpriteExtra*> stageButtons;
-    int i = 0;
-
     CCTextureCache::sharedTextureCache()->addImage("WorldSheet.png", false);
     CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("WorldSheet.plist");
 
+    int i = 0;
     for (const auto& coord : stageCoordinates) {
-
-        if (i == 0) stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_001.png");
-        else stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_locked_001.png");
-
-        CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, menu_selector(ExpertMapLayer::downloadLevel));
-        stageBtn->setPosition(coord);
-        stageBtn->setTag(ids[i]);
-        stageButtons.push_back(stageBtn);
-        dotsmenu->addChild(stageBtn);
+        if (current_level >= i) {
+            stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_001.png");
+            CCMenuItemSpriteExtra* stageBtn;
+            (current_level == i) ? stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, menu_selector(ExpertMapLayer::downloadLevel)) :
+            stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, NULL);
+            stageBtn->setPosition(coord);
+            stageBtn->setTag(ids[i]);
+            dotsmenu->addChild(stageBtn);
+        }
+        else {
+            stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_locked_001.png");
+            stage_sprite->setPosition(coord);
+            stage_sprite->setTag(ids[i]);
+            dotsmenu->addChild(stage_sprite);
+        }
+        
         i++;
     }
 
@@ -238,7 +247,8 @@ void ExpertMapLayer::addMap() {
     }
 
     CCSprite* castleEndBtn = CCSprite::createWithSpriteFrameName("theTowerDoor_001.png");
-    castleEndBtn->setPosition({420, 195});
+    castleEndBtn->setPosition({403, 73});  
+    castleEndBtn->setScale(0.6f);
     dotsmenu->addChild(castleEndBtn);
 
     dotsmenu->setPosition({29, 29});
@@ -246,20 +256,20 @@ void ExpertMapLayer::addMap() {
 }
 
 void ExpertMapLayer::start_expert_run(CCObject*) {
-    super_expert = true;
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
-    end_run_btn_menu->setVisible(true);
+    current_level = 0;
+    //end_run_btn_menu->setVisible(true);
+    downloading = true;
 
     downloadLevels();
 }
 
 void ExpertMapLayer::downloadLevels() {
-    int rng = rand() % 3040;  
     web::AsyncWebRequest()
         .userAgent("")
 		.postRequest()
-		.bodyRaw(fmt::format("diff=5&type=4&page={}&len=5&secret=Wmfd2893gb7", rng))
+		.bodyRaw(fmt::format("diff=5&type=4&page={}&len=5&secret=Wmfd2893gb7", rand() % 3040))
         .fetch("http://www.boomlings.com/database/getGJLevels21.php")
         .text()
         .then([this](std::string const& resultat) {
@@ -272,9 +282,8 @@ void ExpertMapLayer::downloadLevels() {
 }
 
 void ExpertMapLayer::ondownloadfinished(std::string const& string) {
-    int rng = rand() % 10;
     std::vector<std::string> levelvect = splitString(string, '|');
-    std::string level = levelvect[rng];
+    std::string level = levelvect[rand() % 10];
     std::vector<std::string> leveldata = splitString(level, ':');
     log::info("{}", leveldata[1]);
     dl_count++;
@@ -288,15 +297,22 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         sharelevels += leveldata[1];
         ids.push_back(std::stoi(leveldata[1]));
         dl_txt->setVisible(false);
+        super_expert = true;
+        downloading = false;
+        end_run_btn_menu->setVisible(true);
         addMap();
     }
 }
 
 void ExpertMapLayer::end_expert_run(CCObject*) {
+    expertReset();
+}
+
+void ExpertMapLayer::expertReset() {
     super_expert = false;
-    //FLAlertLayer* end_run = FLAlertLayer::create("End Run", "Press <cy>OK</c> to <cr>end your run</c>.", "OK");
-    //end_run->show();
+    ids.clear();
     lives = 30;
+    
     ExpertMapLayer::keyBackClicked();
 }
 
@@ -306,6 +322,11 @@ void ExpertMapLayer::keyBackClicked() {
 }
 
 void ExpertMapLayer::onGoBack(CCObject*) {
+    if (downloading) {
+        FLAlertLayer* end_run = FLAlertLayer::create("Invalid Action", "You can't leave while downloading!", "OK");
+        end_run->show();
+        return;
+    }
     CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
 }
 
@@ -325,6 +346,16 @@ ExpertMapLayer* ExpertMapLayer::scene() {
     scene->addChild(layer);
     auto transition = CCTransitionFade::create(0.5f, scene);
     CCDirector::sharedDirector()->pushScene(transition);
+
+    return layer;
+}
+
+ExpertMapLayer* ExpertMapLayer::replaceScene() {
+    auto layer = ExpertMapLayer::create();
+    auto scene = CCScene::create();
+    scene->addChild(layer);
+    auto transition = CCTransitionFade::create(0.5f, scene);
+    CCDirector::sharedDirector()->replaceScene(transition);
 
     return layer;
 }

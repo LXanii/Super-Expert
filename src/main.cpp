@@ -16,6 +16,10 @@ extern int lives;
 extern bool super_expert;
 int extra_lives;
 bool level_started = false;
+bool downloading = false;
+
+extern int current_level;
+extern std::vector<int> ids;
 
 void resetLives() {
 	lives = 30;
@@ -87,19 +91,24 @@ SimplePlayer* lives_2;
 			}
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
+			if (lives <= 0) {
+				onQuit();
+				return;
+			}
 			log::info("{}", extra_lives);
 			if (level_started) {
-					log::info("level_started");
-					}
+				log::info("level_started");
 				}
 			}
+			} 
 
 	void onQuit() {
 		//resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
 		if (super_expert) {
-			ExpertMapLayer::scene();
+			ExpertMapLayer::replaceScene();
+			FMODAudioEngine::sharedEngine()->stopAllMusic();
 		} else {
 			PlayLayer::onQuit();
 		}
@@ -164,5 +173,6 @@ class $modify(EndLevelLayer) {
 		//if (extra_lives > 0) lives += extra_lives;
 		level_started = false;
 		lives += 1; // compensate for completion
+		if (ids[current_level] == m_playLayer->m_level->m_levelID) current_level++;
 	}
 };
