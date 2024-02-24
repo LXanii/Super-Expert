@@ -11,6 +11,7 @@
 
 using namespace geode::prelude;
 
+int current_level = 0;
 extern int lives;
 bool super_expert = false;
 std::vector<int> ids;
@@ -183,34 +184,60 @@ bool ExpertMapLayer::init() {
 }
 
 void ExpertMapLayer::addMap() {
+
+    CCSprite* stage_sprite;
+
     CCMenu* dotsmenu = CCMenu::create();
 
-    CCMenuItemSpriteExtra* castleBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("theTower_01_001.png"), this, NULL);
-    castleBtn->setPosition({95, 90});
-    castleBtn->setScale(0.75);
+    CCTextureCache::sharedTextureCache()->addImage("TowerSheet.png", false);
+    CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("TowerSheet.plist");
+
+    CCSprite* castleBtn = CCSprite::createWithSpriteFrameName("theTower_01_001.png");
+    castleBtn->setPosition({35, 110});
+    castleBtn->setScale(0.7);
     dotsmenu->addChild(castleBtn);
 
     // thanks chatgpt
     std::vector<CCPoint> stageCoordinates = {
-        {135, 45}, {175, 45}, {215, 45}, {255, 45}, {282, 72}, {255, 100},
-        {215, 100}, {175, 100}, {147, 127}, {175, 155}, {215, 155},
-        {255, 155}, {295, 155}, {335, 155}, {375, 155}
+        {105, 45}, {160, 45}, {215, 45}, {270, 45}, {315, 72}, {270, 100},
+        {215, 100}, {160, 100}, {115, 127}, {160, 155}, {215, 155},
+        {270, 155}, {325, 155}, {380, 155}, {435, 155}
+    };
+
+    std::vector<CCPoint> stageBlanks = {
+        {133, 45}, {188, 45}, {243, 45}, {293, 55},
+        {293, 90}, {243, 100}, {188, 100}, {128, 110}, {128, 145},
+        {188, 155}, {243, 155}, {298, 155}, {353, 155}, {408, 155}
     };
 
     std::vector<CCMenuItemSpriteExtra*> stageButtons;
     int i = 0;
 
+    CCTextureCache::sharedTextureCache()->addImage("WorldSheet.png", false);
+    CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("WorldSheet.plist");
+
     for (const auto& coord : stageCoordinates) {
-        CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, menu_selector(ExpertMapLayer::downloadLevel));
+
+        if (i == 0) stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_001.png");
+        else stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_locked_001.png");
+
+        CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, menu_selector(ExpertMapLayer::downloadLevel));
         stageBtn->setPosition(coord);
-        stageBtn->setScale(1.5);
         stageBtn->setTag(ids[i]);
         stageButtons.push_back(stageBtn);
         dotsmenu->addChild(stageBtn);
         i++;
     }
 
-    CCMenuItemSpriteExtra* castleEndBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
+    for (const auto& coord : stageBlanks) {
+
+        CCSprite* stageBlank = CCSprite::createWithSpriteFrameName("uiDot_001.png");
+        stageBlank->setPosition(coord);
+        stageBlank->setScale(0.5);
+        dotsmenu->addChild(stageBlank);
+    }
+
+    CCSprite* castleEndBtn = CCSprite::createWithSpriteFrameName("theTowerDoor_001.png");
     castleEndBtn->setPosition({420, 195});
     dotsmenu->addChild(castleEndBtn);
 
@@ -270,7 +297,6 @@ void ExpertMapLayer::end_expert_run(CCObject*) {
     //FLAlertLayer* end_run = FLAlertLayer::create("End Run", "Press <cy>OK</c> to <cr>end your run</c>.", "OK");
     //end_run->show();
     lives = 30;
-    ids.clear();
     ExpertMapLayer::keyBackClicked();
 }
 
