@@ -185,8 +185,9 @@ bool ExpertMapLayer::init() {
 void ExpertMapLayer::addMap() {
     CCMenu* dotsmenu = CCMenu::create();
 
-    CCMenuItemSpriteExtra* castleBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, NULL);
+    CCMenuItemSpriteExtra* castleBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("theTower_01_001.png"), this, NULL);
     castleBtn->setPosition({95, 90});
+    castleBtn->setScale(0.75);
     dotsmenu->addChild(castleBtn);
 
     // thanks chatgpt
@@ -202,6 +203,7 @@ void ExpertMapLayer::addMap() {
     for (const auto& coord : stageCoordinates) {
         CCMenuItemSpriteExtra* stageBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("uiDot_001.png"), this, menu_selector(ExpertMapLayer::downloadLevel));
         stageBtn->setPosition(coord);
+        stageBtn->setScale(1.5);
         stageBtn->setTag(ids[i]);
         stageButtons.push_back(stageBtn);
         dotsmenu->addChild(stageBtn);
