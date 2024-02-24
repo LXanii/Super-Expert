@@ -270,6 +270,7 @@ void ExpertMapLayer::end_expert_run(CCObject*) {
     //FLAlertLayer* end_run = FLAlertLayer::create("End Run", "Press <cy>OK</c> to <cr>end your run</c>.", "OK");
     //end_run->show();
     lives = 30;
+    ids.clear();
     ExpertMapLayer::keyBackClicked();
 }
 
