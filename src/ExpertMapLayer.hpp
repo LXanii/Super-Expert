@@ -55,6 +55,7 @@ public:
     int dl_count;
     std::string sharelevels;
     CCMenu* end_run_btn_menu;
+    CCLabelBMFont* lvls_completed;
 };
 
 void ExpertMapLayer::downloadLevel(CCObject* self) {
@@ -88,6 +89,7 @@ bool ExpertMapLayer::init() {
 	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
+    CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level).c_str(), "chatFont.fnt");
     dl_count = 0;
 
     dl_txt = CCLabelBMFont::create("Levels Downloaded: 0/15", "bigFont.fnt");
@@ -136,6 +138,8 @@ bool ExpertMapLayer::init() {
     super_expert_lbl->setPosition({start_btn_menu->getPositionX(), back_btn_menu->getPositionY()});
     super_expert_lbl->setScale(1.2);
 
+    lvls_completed->setPosition({super_expert_lbl->getPositionX(), super_expert_lbl->getPositionY() - 30});
+
     expert_run_bg->setPosition({size.width / 2, size.height / 2});
     expert_run_bg->setScale(1.2);
     expert_run_bg->setColor(ccColor3B(43,57,96));
@@ -169,6 +173,7 @@ bool ExpertMapLayer::init() {
     addChild(lives_text);
     addChild(lives_text_x);
     addChild(back_btn_menu);
+    addChild(lvls_completed);
     addChild(dl_txt);
     addChild(end_run_btn_menu);
     addChild(super_expert_lbl);
@@ -176,9 +181,11 @@ bool ExpertMapLayer::init() {
     back_btn_menu->addChild(backBtn);
     if (!super_expert) {
         end_run_btn_menu->setVisible(false);
+        lvls_completed->setVisible(false);
         addChild(start_btn_menu);
         start_btn_menu->addChild(startBtn);
         startBtn->addChild(start_game_text);
+        lvls_completed->setVisible(false);
     }
     else {
         addMap();
@@ -290,7 +297,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     dl_txt->setString(fmt::format("Levels Downloaded: {}/15", dl_count).c_str());
     if (dl_count < 15) {
         downloadLevels();
-        sharelevels += leveldata[1] + ";";
+        sharelevels += leveldata[1] + ";"; // pls dont remove need it for multi runs thx
         ids.push_back(std::stoi(leveldata[1]));
     }
     else {
@@ -300,6 +307,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         super_expert = true;
         downloading = false;
         end_run_btn_menu->setVisible(true);
+        //lvls_completed->setVisible(true); fix this before i end my life pls
         addMap();
     }
 }
