@@ -53,7 +53,6 @@ public:
     void addMap();
     void ondownloadfinished(std::string const&);
     void expertReset();
-    void stopAllAudio();
 
     int dl_count;
     CCLabelBMFont* dl_txt;
@@ -70,8 +69,14 @@ void ExpertMapLayer::downloadLevel(CCObject* self) {
     GameLevelManager::sharedState()->m_levelDownloadDelegate = this;
     GameLevelManager::sharedState()->downloadLevel(self->getTag(), true); // fuck you rob
 
-    ExpertMapLayer::stopAllAudio();
+    FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
+    
+    fm->stopAllMusic();
+    fm->stopAllActions();
+    fm->stopAllEffects();
+
     // put sfx here
+    fm->playMusic("playSound_01.ogg", false, fm->m_musicVolume, 0);
 }
 
 void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
@@ -94,7 +99,7 @@ bool ExpertMapLayer::init() {
     
     this->setKeypadEnabled(true);
 
-    CCSprite* expert_run_bg = CCSprite::create("game_bg_36_001.png");
+    CCSprite* expert_run_bg = CCSprite::create("game_bg_08_001.png");
     CCLabelBMFont* lives_text = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
 	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
@@ -404,26 +409,11 @@ void ExpertMapLayer::onGoBack(CCObject*) {
             CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
         }
         });
-    else if (!super_expert) {
-        FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
-        
-        CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade); 
-        ExpertMapLayer::stopAllAudio();
-
-        fm->playMusic("menuLoop.mp3", true, fm->m_musicVolume, 0);
-    }
+    else if (!super_expert) CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
 }
 
 void ExpertMapLayer::openSettings(CCObject*) {
     openSettingsPopup(Mod::get());
-}
-
-void ExpertMapLayer::stopAllAudio() {
-
-    FMODAudioEngine::sharedEngine()->stopAllMusic();
-    FMODAudioEngine::sharedEngine()->stopAllActions();
-    FMODAudioEngine::sharedEngine()->stopAllEffects();
-
 }
 
 ExpertMapLayer* ExpertMapLayer::create() {
@@ -438,19 +428,11 @@ ExpertMapLayer* ExpertMapLayer::create() {
 
 ExpertMapLayer* ExpertMapLayer::scene() {
 
-    FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
-
     auto layer = ExpertMapLayer::create();
     auto scene = CCScene::create();
     scene->addChild(layer);
     auto transition = CCTransitionFade::create(0.5f, scene);
     CCDirector::sharedDirector()->pushScene(transition);
-
-    FMODAudioEngine::sharedEngine()->stopAllMusic();
-    FMODAudioEngine::sharedEngine()->stopAllActions();
-    FMODAudioEngine::sharedEngine()->stopAllEffects();
-
-    fm->playMusic("super_expert_music.mp3"_spr, true, fm->m_musicVolume, 1);
 
     return layer;
 }
@@ -458,20 +440,16 @@ ExpertMapLayer* ExpertMapLayer::scene() {
 ExpertMapLayer* ExpertMapLayer::replaceScene() {
 
     FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
+    
+    fm->stopAllMusic();
+    fm->stopAllActions();
+    fm->stopAllEffects();
 
     auto layer = ExpertMapLayer::create();
     auto scene = CCScene::create();
     scene->addChild(layer);
     auto transition = CCTransitionFade::create(0.5f, scene);
     CCDirector::sharedDirector()->replaceScene(transition);
-    
-    FMODAudioEngine::sharedEngine()->stopAllMusic();
-    FMODAudioEngine::sharedEngine()->stopAllActions();
-    FMODAudioEngine::sharedEngine()->stopAllEffects(); // dont make fun of me this is the only way it would work :(
-
-    fm->playMusic("super_expert_music.mp3"_spr, true, fm->m_musicVolume, 1);
-
-    log::info("e");
 
     return layer;
 }
