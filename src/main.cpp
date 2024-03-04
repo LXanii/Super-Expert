@@ -27,16 +27,9 @@ void resetLives() {
 
 class $modify(PlayLayer) {
 
-CCSprite* lives_img;
-CCSprite* empty_live_1;
-CCSprite* empty_live_2;
-
 CCLabelBMFont* lives_text;
 CCLabelBMFont* lives_text_x;
 CCLabelBMFont* lives_bracket;
-
-SimplePlayer* lives_1;
-SimplePlayer* lives_2;
 
 	bool init(GJGameLevel* level, bool first, bool second) {
 		bool result = PlayLayer::init(level, first, second);
@@ -57,6 +50,11 @@ SimplePlayer* lives_2;
 			SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
 			player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
 			player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
+			player->setGlowOutline(manager->colorForIdx(manager->getPlayerGlowColor()));
+			
+			if (manager->getPlayerGlow()) player->enableCustomGlowColor(manager->colorForIdx(manager->getPlayerGlowColor()));
+			else player->disableGlowOutline();
+			
 			player->updateColors();
 
 			player->setPosition({11,12});
@@ -91,27 +89,22 @@ SimplePlayer* lives_2;
 			}
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
-			if (lives <= 0) {
+			if (lives + 2 <= 0) {
 				onQuit();
-				return;
 			}
 			log::info("{}", extra_lives);
 			if (level_started) {
 				log::info("level_started");
 				}
 			}
-			} 
+		} 
 
 	void onQuit() {
 		//resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
-		if (super_expert) {
-			ExpertMapLayer::replaceScene();
-			FMODAudioEngine::sharedEngine()->stopAllMusic();
-		} else {
-			PlayLayer::onQuit();
-		}
+		if (super_expert) ExpertMapLayer::replaceScene();
+		else PlayLayer::onQuit();
 	}
 };
 
@@ -137,18 +130,20 @@ class $modify(ExpertCallback, CreatorLayer) {
 		CCMenu* menu = CCMenu::create();
 
 		CCMenuItemSpriteExtra* versusButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("versus-button"));
+		CCMenuItemSpriteExtra* questButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("quests-button"));
+
+		CCSprite* expertBtnSprite = CCSprite::create("super_expert_btn.png"_spr);
+		expertBtnSprite->setScale(0.805);
+
+		CCMenuItemSpriteExtra* expertButton = CCMenuItemSpriteExtra::create(expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
 
 		versusButton->setVisible(false);
 
-		menu->setScale(0.8);
-		menu->setPosition(versusButton->convertToWorldSpace(getPosition()));
-		menu->setPosition({menu->getPositionX() - 12.9f, menu->getPositionY() + 7.5f});
+		expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
+		expertButton->setID("super-expert-button");
 		
-		menu->addChild(CCMenuItemSpriteExtra::create(
-            CCSprite::create("super_expert_btn.png"_spr),
-            this, menu_selector(ExpertCallback::onExpert)));
+		creatorButtons->addChild(expertButton);
 
-		addChild(menu);
 		return result;
 	}
 
@@ -157,22 +152,14 @@ class $modify(ExpertCallback, CreatorLayer) {
     }
 };
 
-class $modify(StartupCallback, LevelInfoLayer) {
-	void onUpdate(cocos2d::CCObject* sender) {
-		StartupCallback::onMap(m_level);
-	}
-
-	void onMap(CCObject*) {
-		ExpertStartupLayer::scene(m_level);
-	}
-};
-
 class $modify(EndLevelLayer) {
 	void showLayer(bool p0) { // find whatever gets called when u hit the end
 		EndLevelLayer::showLayer(p0);
-		//if (extra_lives > 0) lives += extra_lives;
-		level_started = false;
-		lives += 1; // compensate for completion
-		if (ids[current_level] == m_playLayer->m_level->m_levelID) current_level++;
+		if (super_expert) {
+			//if (extra_lives > 0) lives += extra_lives;
+			level_started = false;
+			lives += 1; // compensate for completion
+			if (ids[current_level] == m_playLayer->m_level->m_levelID) current_level++;
+		}
 	}
 };

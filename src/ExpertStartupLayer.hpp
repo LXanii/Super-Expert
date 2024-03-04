@@ -55,6 +55,11 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
     SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
     player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
     player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
+    player->setGlowOutline(manager->colorForIdx(manager->getPlayerGlowColor()));
+			
+    if (manager->getPlayerGlow()) player->enableCustomGlowColor(manager->colorForIdx(manager->getPlayerGlowColor()));
+    else player->disableGlowOutline();
+
 	player->updateColors();
     if (manager->getPlayerGlow()) player->enableCustomGlowColor(manager->colorForIdx(manager->getPlayerGlowColor()));
     player->setScale(2.205f);

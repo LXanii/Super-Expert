@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Geode/DefaultInclude.hpp>
+#include <Geode/ui/GeodeUI.hpp>
 #include <Geode/utils/web.hpp>
 #include <cocos2d.h>
 #include <Geode/Geode.hpp>
@@ -16,6 +17,7 @@ extern int lives;
 bool super_expert = false;
 std::vector<int> ids;
 extern bool downloading;
+std::string sharelevels;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -45,23 +47,31 @@ public:
     void start_expert_run(CCObject*);
     void end_expert_run(CCObject*);
     void downloadLevel(CCObject*);
+    void copyRunID(CCObject*);
+    void openSettings(CCObject*);
     void downloadLevels();
     void addMap();
     void ondownloadfinished(std::string const&);
     void expertReset();
+    void stopAllAudio();
 
-    CCLabelBMFont* dl_txt;
-    CCMenuItemSpriteExtra* startBtn;
     int dl_count;
-    std::string sharelevels;
-    CCMenu* end_run_btn_menu;
+    CCLabelBMFont* dl_txt;
     CCLabelBMFont* lvls_completed;
+    CCMenu* end_run_btn_menu;
+    CCMenu* copy_btn_menu;
+    CCMenu* settings_menu;
+    CCMenuItemSpriteExtra* startBtn;
+    CCMenuItemSpriteExtra* copyBtn;
 };
 
 void ExpertMapLayer::downloadLevel(CCObject* self) {
     log::info("{}", self->getTag());
     GameLevelManager::sharedState()->m_levelDownloadDelegate = this;
     GameLevelManager::sharedState()->downloadLevel(self->getTag(), true); // fuck you rob
+
+    ExpertMapLayer::stopAllAudio();
+    // put sfx here
 }
 
 void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
@@ -84,10 +94,11 @@ bool ExpertMapLayer::init() {
     
     this->setKeypadEnabled(true);
 
-    CCSprite* expert_run_bg = CCSprite::create("game_bg_08_001.png");
+    CCSprite* expert_run_bg = CCSprite::create("game_bg_36_001.png");
     CCLabelBMFont* lives_text = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
 	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
+    CCLabelBMFont* run_id = CCLabelBMFont::create("Share Run ID", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
     CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level).c_str(), "chatFont.fnt");
     dl_count = 0;
@@ -101,18 +112,25 @@ bool ExpertMapLayer::init() {
     CCMenu* start_btn_menu = CCMenu::create();
     
     end_run_btn_menu = CCMenu::create();
+    copy_btn_menu = CCMenu::create();
+    settings_menu = CCMenu::create();
 
     auto backBtn = CCMenuItemSpriteExtra::create(
         CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"),
         this, menu_selector(ExpertMapLayer::onGoBack));
 
+    auto settingsBtn = CCMenuItemSpriteExtra::create(
+        CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png"),
+        this, menu_selector(ExpertMapLayer::openSettings));
+
     startBtn = CCMenuItemSpriteExtra::create(
         CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"),
         this, menu_selector(ExpertMapLayer::start_expert_run));
 
-    auto endRunBtn = CCMenuItemSpriteExtra::create(
-        CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png"),
-        this, menu_selector(ExpertMapLayer::end_expert_run));
+    copyBtn = CCMenuItemSpriteExtra::create(
+        CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"),
+        this, menu_selector(ExpertMapLayer::copyRunID));
+
 
 	auto bottomLeft = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
 	auto topRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
@@ -151,11 +169,19 @@ bool ExpertMapLayer::init() {
     SimplePlayer* player = SimplePlayer::create(manager->getPlayerFrame());
     player->m_firstLayer->setColor(manager->colorForIdx(manager->getPlayerColor()));
     player->m_secondLayer->setColor(manager->colorForIdx(manager->getPlayerColor2()));
+    player->setGlowOutline(manager->colorForIdx(manager->getPlayerGlowColor()));
+			
+    if (manager->getPlayerGlow()) player->enableCustomGlowColor(manager->colorForIdx(manager->getPlayerGlowColor()));
+    else player->disableGlowOutline();
+    
     player->updateColors();
 
     player->setPosition({91,12});
     player->setScale(0.65);
     addChild(player, 2);
+
+    copy_btn_menu->setScale(0.8);
+    copy_btn_menu->setPosition({player->getPositionX() + 260, player->getPositionY() - 30});
 
     lives_text->setScale(0.6);
     lives_text->setOpacity(200);
@@ -166,8 +192,12 @@ bool ExpertMapLayer::init() {
     lives_text_x->setPosition({lives_text->getPositionX() - 18, lives_text->getPositionY()});
 
     start_btn_menu->setPosition({size.width/ 2, size.height/ 2});
+
     start_game_text->setPosition(85,17);
     start_game_text->setScale(0.5);
+
+    run_id->setScale(0.6);
+    run_id->setPosition({85, 16.5});
 
     addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
     addChild(lives_text);
@@ -177,7 +207,19 @@ bool ExpertMapLayer::init() {
     addChild(dl_txt);
     addChild(end_run_btn_menu);
     addChild(super_expert_lbl);
-    end_run_btn_menu->addChild(endRunBtn);
+
+    addChild(copy_btn_menu);
+
+    copy_btn_menu->addChild(copyBtn);
+    copyBtn->addChild(run_id);
+    copyBtn->setVisible(false);
+
+    addChild(settings_menu);
+    settings_menu->addChild(settingsBtn);
+    settingsBtn->setPosition({0, -50});
+
+    settings_menu->setVisible(false); // remove in future for update thanks me
+
     back_btn_menu->addChild(backBtn);
     if (!super_expert) {
         end_run_btn_menu->setVisible(false);
@@ -229,8 +271,11 @@ void ExpertMapLayer::addMap() {
         if (current_level >= i) {
             stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_001.png");
             CCMenuItemSpriteExtra* stageBtn;
-            (current_level == i) ? stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, menu_selector(ExpertMapLayer::downloadLevel)) :
-            stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, NULL);
+            if (current_level == i) stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, menu_selector(ExpertMapLayer::downloadLevel));
+            else {
+                stageBtn = CCMenuItemSpriteExtra::create(stage_sprite, this, NULL);
+                stageBtn->setColor({ 92, 92, 92 });
+            }
             stageBtn->setPosition(coord);
             stageBtn->setTag(ids[i]);
             dotsmenu->addChild(stageBtn);
@@ -259,17 +304,40 @@ void ExpertMapLayer::addMap() {
     dotsmenu->addChild(castleEndBtn);
 
     dotsmenu->setPosition({29, 29});
+
+    // copyBtn->setVisible(true); shared run id button uncomment in future update thanks again me
+    settings_menu->setVisible(false);
+
     addChild(dotsmenu);
 }
 
 void ExpertMapLayer::start_expert_run(CCObject*) {
+    std::string run_id_val = Mod::get()->getSettingValue<std::string>("run-id");
+
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
+    settings_menu->setVisible(false);
     current_level = 0;
     //end_run_btn_menu->setVisible(true);
-    downloading = true;
+    /*if (run_id_val != "") {
+        std::vector<std::string> levelids = splitString(run_id_val, ';');
 
+        for (int i = 0; i < levelids.size(); i++) {
+            log::info("{}", levelids[i]);
+        }
+
+    }
+    else {
+        downloading = true;
+        downloadLevels();
+    } */
+    downloading = true;
     downloadLevels();
+}
+
+void ExpertMapLayer::copyRunID(CCObject*) {
+    clipboard::write(sharelevels);
+    Notification::create("Run ID Copied to Clipboard.", CCSprite::createWithSpriteFrameName("GJ_completesIcon_001.png"), 2.0f)->show();
 }
 
 void ExpertMapLayer::downloadLevels() {
@@ -307,14 +375,10 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         super_expert = true;
         downloading = false;
         end_run_btn_menu->setVisible(true);
-        //lvls_completed->setVisible(true); fix this before i end my life pls
+        Mod::get()->setSettingValue<std::string>("run-id", "");
         addMap();
     }
-}
-
-void ExpertMapLayer::end_expert_run(CCObject*) {
-    expertReset();
-}
+} 
 
 void ExpertMapLayer::expertReset() {
     super_expert = false;
@@ -331,11 +395,35 @@ void ExpertMapLayer::keyBackClicked() {
 
 void ExpertMapLayer::onGoBack(CCObject*) {
     if (downloading) {
-        FLAlertLayer* end_run = FLAlertLayer::create("Invalid Action", "You can't leave while downloading!", "OK");
-        end_run->show();
+        FLAlertLayer::create("Invalid Action", "You can't leave while downloading!", "OK")->show();
         return;
     }
-    CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
+    if (super_expert && !downloading) createQuickPopup("End Expert Run", "Would you like to <cr>end</c> your <cp>expert run</c>?", "NO", "YES", [this](FLAlertLayer*, bool btn2) {
+        if (btn2) {
+            expertReset(); 
+            CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
+        }
+        });
+    else if (!super_expert) {
+        FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
+        
+        CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade); 
+        ExpertMapLayer::stopAllAudio();
+
+        fm->playMusic("menuLoop.mp3", true, fm->m_musicVolume, 0);
+    }
+}
+
+void ExpertMapLayer::openSettings(CCObject*) {
+    openSettingsPopup(Mod::get());
+}
+
+void ExpertMapLayer::stopAllAudio() {
+
+    FMODAudioEngine::sharedEngine()->stopAllMusic();
+    FMODAudioEngine::sharedEngine()->stopAllActions();
+    FMODAudioEngine::sharedEngine()->stopAllEffects();
+
 }
 
 ExpertMapLayer* ExpertMapLayer::create() {
@@ -349,21 +437,41 @@ ExpertMapLayer* ExpertMapLayer::create() {
 }
 
 ExpertMapLayer* ExpertMapLayer::scene() {
+
+    FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
+
     auto layer = ExpertMapLayer::create();
     auto scene = CCScene::create();
     scene->addChild(layer);
     auto transition = CCTransitionFade::create(0.5f, scene);
     CCDirector::sharedDirector()->pushScene(transition);
 
+    FMODAudioEngine::sharedEngine()->stopAllMusic();
+    FMODAudioEngine::sharedEngine()->stopAllActions();
+    FMODAudioEngine::sharedEngine()->stopAllEffects();
+
+    fm->playMusic("super_expert_music.mp3"_spr, true, fm->m_musicVolume, 1);
+
     return layer;
 }
 
 ExpertMapLayer* ExpertMapLayer::replaceScene() {
+
+    FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
+
     auto layer = ExpertMapLayer::create();
     auto scene = CCScene::create();
     scene->addChild(layer);
     auto transition = CCTransitionFade::create(0.5f, scene);
     CCDirector::sharedDirector()->replaceScene(transition);
+    
+    FMODAudioEngine::sharedEngine()->stopAllMusic();
+    FMODAudioEngine::sharedEngine()->stopAllActions();
+    FMODAudioEngine::sharedEngine()->stopAllEffects(); // dont make fun of me this is the only way it would work :(
+
+    fm->playMusic("super_expert_music.mp3"_spr, true, fm->m_musicVolume, 1);
+
+    log::info("e");
 
     return layer;
 }
