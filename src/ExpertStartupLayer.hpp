@@ -101,7 +101,7 @@ void ExpertStartupLayer::loadLevel() {
 }
 
 void ExpertStartupLayer::keyBackClicked() {
-    this->onGoBack(nullptr);
+    //this->onGoBack(nullptr);
 }
 
 void ExpertStartupLayer::onGoBack(CCObject*) {
