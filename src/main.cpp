@@ -79,20 +79,24 @@ CCLabelBMFont* lives_bracket;
 	}
 
 	void resetLevel() {
-		PlayLayer::resetLevel();
 		if (super_expert) {
 			if (first_init) {
 				first_init = false; // fat retard rob
 			}
 			else {
-				m_fields->lives_text->setString(std::to_string(lives).c_str());
+				if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
 			}
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
+			
 			if (lives + 2 <= 0) {
-				onQuit();
+				FLAlertLayer::create("Out of Lives!", "It looks like you've <cr>ran out of lives</c>!", "OK");
+				PlayLayer::onQuit();
+				ExpertMapLayer::replaceScene();
 			}
+			else PlayLayer::resetLevel();
 			log::info("{}", extra_lives);
+
 			if (level_started) {
 				log::info("level_started");
 				}
@@ -103,7 +107,9 @@ CCLabelBMFont* lives_bracket;
 		//resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
-		if (super_expert) ExpertMapLayer::replaceScene();
+		if (super_expert) {
+			ExpertMapLayer::replaceScene();
+		}
 		else PlayLayer::onQuit();
 	}
 };
