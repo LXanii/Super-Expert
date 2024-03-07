@@ -101,6 +101,7 @@ CCLabelBMFont* lives_bracket;
 				log::info("level_started");
 				}
 			}
+		else PlayLayer::resetLevel();
 		} 
 
 	void onQuit() {
