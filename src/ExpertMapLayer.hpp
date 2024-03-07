@@ -69,14 +69,12 @@ void ExpertMapLayer::downloadLevel(CCObject* self) {
     GameLevelManager::sharedState()->m_levelDownloadDelegate = this;
     GameLevelManager::sharedState()->downloadLevel(self->getTag(), true); // fuck you rob
 
-    FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
-    
-    fm->stopAllMusic();
-    fm->stopAllActions();
-    fm->stopAllEffects();
+    FMODAudioEngine::sharedEngine()->stopAllMusic();
+    FMODAudioEngine::sharedEngine()->stopAllActions();
+    FMODAudioEngine::sharedEngine()->stopAllEffects();
 
     // put sfx here
-    fm->playMusic("playSound_01.ogg", false, fm->m_musicVolume, 0);
+    FMODAudioEngine::sharedEngine()->playMusic("playSound_01.ogg", false, FMODAudioEngine::sharedEngine()->m_musicVolume, 0);
 }
 
 void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
@@ -395,7 +393,7 @@ void ExpertMapLayer::expertReset() {
 
 
 void ExpertMapLayer::keyBackClicked() {
-    this->onGoBack(nullptr);
+    //this->onGoBack(nullptr);
 }
 
 void ExpertMapLayer::onGoBack(CCObject*) {
@@ -438,12 +436,10 @@ ExpertMapLayer* ExpertMapLayer::scene() {
 }
 
 ExpertMapLayer* ExpertMapLayer::replaceScene() {
-
-    FMODAudioEngine* fm = FMODAudioEngine::sharedEngine();
     
-    fm->stopAllMusic();
-    fm->stopAllActions();
-    fm->stopAllEffects();
+    FMODAudioEngine::sharedEngine()->stopAllMusic();
+    FMODAudioEngine::sharedEngine()->stopAllActions();
+    FMODAudioEngine::sharedEngine()->stopAllEffects();
 
     auto layer = ExpertMapLayer::create();
     auto scene = CCScene::create();
