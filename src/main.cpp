@@ -115,6 +115,25 @@ CCLabelBMFont* lives_bracket;
 	}
 };
 
+class $modify(LevelInfoLayer) {
+	void onBack(CCObject* obj) {
+		if (super_expert) {
+			ExpertMapLayer::replaceScene();
+			return;
+		}
+
+		LevelInfoLayer::onBack(obj);
+	}
+
+	void onPlay(CCObject* obj) {
+		if (super_expert) {
+			ExpertStartupLayer::scene(m_level);
+			return;
+		}
+		LevelInfoLayer::onPlay(obj);
+	}
+};
+
 class $modify(PauseLayer) {
 	void onPracticeMode(cocos2d::CCObject* sender) {
 		if (super_expert) {
