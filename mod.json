@@ -9,6 +9,13 @@
 		"AdyaGD"
 	],
 	"description": "Mario Maker's 'Super Expert Run' in Geometry Dash!",
+	"dependencies": [
+        {
+            "id": "geode.node-ids",
+            "version": ">=v1.7.0",
+            "importance": "required"
+        }
+    ],
 	"resources": {
         "sprites": [
             "resources/*.png"
@@ -18,11 +25,11 @@
 		]
     },
 	"settings": {
-		"run-id": {
-			"name": "Run ID",
-			"description": "Input someone elses Run ID, or make your own for a custom run!",
-			"type": "string",
-			"default": ""
+		"level-info": {
+			"name": "Level Info",
+			"description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
+			"type": "bool",
+			"default": false
 		}
 	}
 }

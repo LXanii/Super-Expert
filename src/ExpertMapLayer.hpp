@@ -18,7 +18,7 @@ bool super_expert = false;
 std::vector<int> ids;
 extern bool downloading;
 std::string sharelevels;
-bool enableinfolayer;
+bool enableinfolayer = Mod::get()->getSettingValue<bool>("level-info");
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -75,7 +75,7 @@ void ExpertMapLayer::downloadLevel(CCObject* self) {
     FMODAudioEngine::sharedEngine()->stopAllEffects();
 
     // put sfx here
-    if (!enableinfolayer) FMODAudioEngine::sharedEngine()->playMusic("playSound_01.ogg", false, FMODAudioEngine::sharedEngine()->m_musicVolume, 0);
+    if (!enableinfolayer) FMODAudioEngine::sharedEngine()->playMusic("playSound_01.ogg", false, 1, 0);
 }
 
 void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {

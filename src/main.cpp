@@ -134,7 +134,20 @@ class $modify(LevelInfoLayer) {
 	}
 };
 
-class $modify(PauseLayer) {
+class $modify(ExpertPauseLayer, PauseLayer) {
+	void customSetup() {
+        PauseLayer::customSetup();
+        
+        auto centerButtons = this->getChildByID("center-button-menu");
+        CCMenuItemSpriteExtra* exitButton = reinterpret_cast<CCMenuItemSpriteExtra*>(centerButtons->getChildByID("exit-button"));
+
+        CCSprite* skipsSprite = CCSprite::create("skipBtn.png"_spr);
+        CCMenuItemSpriteExtra* skipsBtn = CCMenuItemSpriteExtra::create(skipsSprite, this, menu_selector(ExpertPauseLayer::skipLevel));
+
+        skipsBtn->setID("xanii.super_expert/skip-button");
+        skipsBtn->setPosition({-237.750f,-80});
+        centerButtons->addChild(skipsBtn);
+    }
 	void onPracticeMode(cocos2d::CCObject* sender) {
 		if (super_expert) {
 			FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
