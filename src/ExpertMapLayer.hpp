@@ -34,7 +34,6 @@ class ExpertMapLayer : public CCLayer, LevelDownloadDelegate {
 protected:
     bool init() override;
     void keyBackClicked() override;
-    
 
 public:
     virtual void levelDownloadFinished(GJGameLevel*);
@@ -54,6 +53,7 @@ public:
     void addMap();
     void ondownloadfinished(std::string const&);
     void expertReset();
+    void showCongrats();
 
     int dl_count;
     CCLabelBMFont* dl_txt;
@@ -64,6 +64,10 @@ public:
     CCMenuItemSpriteExtra* startBtn;
     CCMenuItemSpriteExtra* copyBtn;
 };
+
+void ExpertMapLayer::keyBackClicked() {
+    this->onGoBack(nullptr);
+}
 
 void ExpertMapLayer::downloadLevel(CCObject* self) {
     log::info("{}", self->getTag());
@@ -108,7 +112,9 @@ bool ExpertMapLayer::init() {
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
     CCLabelBMFont* run_id = CCLabelBMFont::create("Share Run ID", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
-    CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level).c_str(), "chatFont.fnt");
+    int current_level_display = current_level;
+    if (current_level_display > 15) current_level_display = 15;
+    CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level_display).c_str(), "chatFont.fnt");
     dl_count = 0;
 
     dl_txt = CCLabelBMFont::create("Levels Downloaded: 0/15", "bigFont.fnt");
@@ -239,9 +245,18 @@ bool ExpertMapLayer::init() {
     }
     else {
         addMap();
+        if (current_level == 15) {
+            auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
+            runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.4f), showCongrats));
+            current_level++;
+        }
     }
 
     return true;
+}
+
+void ExpertMapLayer::showCongrats() {
+    FLAlertLayer::create("Congratulations!", "You successfully completed\n<cp>Super Expert</c>!", "OK")->show();
 }
 
 void ExpertMapLayer::addMap() {
@@ -392,13 +407,7 @@ void ExpertMapLayer::expertReset() {
     super_expert = false;
     ids.clear();
     lives = 30;
-    
-    ExpertMapLayer::keyBackClicked();
-}
-
-
-void ExpertMapLayer::keyBackClicked() {
-    //this->onGoBack(nullptr);
+    this->onGoBack(nullptr);
 }
 
 void ExpertMapLayer::onGoBack(CCObject*) {

@@ -18,6 +18,7 @@ int extra_lives;
 bool level_started = false;
 bool downloading = false;
 
+int skips = 3;
 extern int current_level;
 extern std::vector<int> ids;
 
@@ -135,8 +136,19 @@ class $modify(LevelInfoLayer) {
 };
 
 class $modify(ExpertPauseLayer, PauseLayer) {
+	void onPracticeMode(cocos2d::CCObject* sender) {
+		if (super_expert) {
+			FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
+		}
+		else {
+			PauseLayer::onPracticeMode(sender);
+		}
+	}
+
 	void customSetup() {
         PauseLayer::customSetup();
+
+		if (!super_expert) return;
         
         auto centerButtons = this->getChildByID("center-button-menu");
         CCMenuItemSpriteExtra* exitButton = reinterpret_cast<CCMenuItemSpriteExtra*>(centerButtons->getChildByID("exit-button"));
@@ -148,13 +160,22 @@ class $modify(ExpertPauseLayer, PauseLayer) {
         skipsBtn->setPosition({-237.750f,-80});
         centerButtons->addChild(skipsBtn);
     }
-	void onPracticeMode(cocos2d::CCObject* sender) {
-		if (super_expert) {
-			FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
+
+	void skipLevel(CCObject* obj) {
+		if (skips <= 0) {
+			FLAlertLayer::create("SKIP", "You don't have any <cr>skips</c> left!", "OK")->show();
+			return;
 		}
-		else {
-			PauseLayer::onPracticeMode(sender);
-		}
+		std::string plural = " ";
+		if (skips > 1) plural = "s ";
+		createQuickPopup("SKIP", fmt::format("Would you like to <cr>skip</c> this <cp>level</c>?\nYou have <cy>{} skip{}left</c>.", skips, plural), "NO", "YES", [this, obj](FLAlertLayer*, bool btn2) {
+        if (btn2) {
+            current_level++;
+			skips--;
+			lives++; // compensation
+			PauseLayer::onQuit(obj);
+        }
+        });
 	}
 };
 
