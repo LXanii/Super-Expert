@@ -48,6 +48,7 @@ public:
     void downloadLevel(CCObject*);
     void copyRunID(CCObject*);
     void openSettings(CCObject*);
+    void openDevs(CCObject*);
     void downloadLevels();
     void addMap();
     void ondownloadfinished(std::string const&);
@@ -60,8 +61,10 @@ public:
     CCMenu* end_run_btn_menu;
     CCMenu* copy_btn_menu;
     CCMenu* settings_menu;
+    CCMenu* devs_menu;
     CCMenuItemSpriteExtra* startBtn;
     CCMenuItemSpriteExtra* copyBtn;
+    CCMenuItemSpriteExtra* devBtn;
 };
 
 void ExpertMapLayer::keyBackClicked() {
@@ -102,6 +105,7 @@ bool ExpertMapLayer::init() {
     GameManager* manager = GameManager::sharedState();
     auto director = CCDirector::sharedDirector();
 	auto size = director->getWinSize();
+    int current_level_display = current_level;
     
     this->setKeypadEnabled(true);
 
@@ -111,12 +115,11 @@ bool ExpertMapLayer::init() {
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
     CCLabelBMFont* run_id = CCLabelBMFont::create("Share Run ID", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
-    int current_level_display = current_level;
-    if (current_level_display > 15) current_level_display = 15;
+    dl_txt = CCLabelBMFont::create("Levels Downloaded: 0/15", "bigFont.fnt");
     CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level_display).c_str(), "chatFont.fnt");
+    if (current_level_display > 15) current_level_display = 15;
     dl_count = 0;
 
-    dl_txt = CCLabelBMFont::create("Levels Downloaded: 0/15", "bigFont.fnt");
     dl_txt->setPosition({size.width/ 2, size.height/ 2});
     dl_txt->setVisible(false);
     dl_txt->setScale(0.75);
@@ -128,13 +131,14 @@ bool ExpertMapLayer::init() {
     copy_btn_menu = CCMenu::create();
     settings_menu = CCMenu::create();
 
+    CCSprite* settingsGear = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+    settingsGear->setScale(0.5);
+
     auto backBtn = CCMenuItemSpriteExtra::create(
         CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"),
         this, menu_selector(ExpertMapLayer::onGoBack));
 
-    auto settingsBtn = CCMenuItemSpriteExtra::create(
-        CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png"),
-        this, menu_selector(ExpertMapLayer::openSettings));
+    auto settingsBtn = CCMenuItemSpriteExtra::create(settingsGear, this, menu_selector(ExpertMapLayer::openSettings));
 
     startBtn = CCMenuItemSpriteExtra::create(
         CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"),
@@ -144,6 +148,7 @@ bool ExpertMapLayer::init() {
         CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"),
         this, menu_selector(ExpertMapLayer::copyRunID));
 
+    //devBtn = CCMenuItemSpriteExtra::create(CCSprite::create("devs.png"_spr), this, menu_selector(ExpertMapLayer::openDevs));
 
 	auto bottomLeft = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
 	auto topRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
@@ -222,16 +227,14 @@ bool ExpertMapLayer::init() {
     addChild(super_expert_lbl);
 
     addChild(copy_btn_menu);
-
+    
     copy_btn_menu->addChild(copyBtn);
     copyBtn->addChild(run_id);
     copyBtn->setVisible(false);
 
     addChild(settings_menu);
     settings_menu->addChild(settingsBtn);
-    settingsBtn->setPosition({0, -50});
-
-    settings_menu->setVisible(false); // remove in future for update thanks me
+    settingsBtn->setPosition({243, 108});
 
     back_btn_menu->addChild(backBtn);
     if (!super_expert) {
@@ -256,6 +259,10 @@ bool ExpertMapLayer::init() {
 
 void ExpertMapLayer::showCongrats() {
     FLAlertLayer::create("Congratulations!", "You successfully completed\n<cp>Super Expert</c>!", "OK")->show();
+}
+
+void ExpertMapLayer::openDevs(CCObject*) {
+    FLAlertLayer::create("Thanks for Downloading!", "<cy>Thanks for downloading</c>!\n\n<cr>Note:</c> This mod is currently in beta, as there is more we plan to add!\nAny suggestions / feedback is appreciated!\n\n<cg>From: Xanii & Adya</c><cp><3</c>", "OK");
 }
 
 void ExpertMapLayer::addMap() {
@@ -328,7 +335,6 @@ void ExpertMapLayer::addMap() {
     dotsmenu->setPosition({29, 29});
 
     // copyBtn->setVisible(true); shared run id button uncomment in future update thanks again me
-    settings_menu->setVisible(false);
 
     addChild(dotsmenu);
 }
@@ -338,7 +344,6 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
 
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
-    settings_menu->setVisible(false);
     current_level = 0;
     //end_run_btn_menu->setVisible(true);
     /*if (run_id_val != "") {
