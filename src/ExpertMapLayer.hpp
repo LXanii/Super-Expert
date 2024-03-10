@@ -12,6 +12,7 @@
 
 using namespace geode::prelude;
 
+int skips = 3;
 int current_level = 0;
 extern int lives;
 bool super_expert = false;
@@ -424,6 +425,7 @@ void ExpertMapLayer::expertReset() {
     ids.clear();
     authors.clear();
     lives = 30;
+    skips = 3;
     this->onGoBack(nullptr);
 }
 

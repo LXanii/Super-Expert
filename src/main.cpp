@@ -18,7 +18,7 @@ int extra_lives;
 bool level_started = false;
 bool downloading = false;
 
-int skips = 3;
+extern int skips;
 extern int current_level;
 extern std::vector<int> ids;
 
