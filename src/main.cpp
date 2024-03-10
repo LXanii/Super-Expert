@@ -215,11 +215,12 @@ class $modify(ExpertCallback, CreatorLayer) {
 class $modify(EndLevelLayer) {
 	void showLayer(bool p0) { // find whatever gets called when u hit the end
 		EndLevelLayer::showLayer(p0);
+		PlayLayer* pl = PlayLayer::get();
 		if (super_expert) {
 			//if (extra_lives > 0) lives += extra_lives;
 			level_started = false;
 			lives += 1; // compensate for completion
-			if (ids[current_level] == m_playLayer->m_level->m_levelID) current_level++;
+			if (ids[current_level] == pl->m_level->m_levelID) current_level++;
 		}
 	}
 };
