@@ -395,7 +395,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     std::vector<std::string> levelvect = splitString(string, '|');
     std::string level = levelvect[rng];
     std::vector<std::string> leveldata = splitString(level, ':');
-    //llog::info("{}", leveldata[1]);
+    //log::info("{}", leveldata[1]);
     for (int i = 0; i < splitString(splitString(string, '#')[1], '|').size(); i++) {
         std::string split = splitString(splitString(string, '#')[1], '|')[i];
         std::vector<std::string> authorsplit = splitString(split, ':');
@@ -405,12 +405,12 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     dl_txt->setString(fmt::format("Levels Downloaded: {}/15", dl_count).c_str());
     if (dl_count < 15) {
         downloadLevels();
-        sharelevels += leveldata[1] + ";"; // pls dont remove need it for multi runs thx
-        ids.push_back(std::stoi(leveldata[1]));
+        //sharelevels += leveldata[1] + ";"; pls dont remove need it for multi runs thx
+        ids.push_back((int)std::stoi(leveldata[1]));
     }
     else {
-        sharelevels += leveldata[1];
-        ids.push_back(std::stoi(leveldata[1]));
+        //sharelevels += leveldata[1];
+        ids.push_back((int)std::stoi(leveldata[1]));
         dl_txt->setVisible(false);
         super_expert = true;
         downloading = false;
