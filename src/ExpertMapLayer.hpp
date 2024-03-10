@@ -103,7 +103,7 @@ void ExpertMapLayer::levelDownloadFailed(int p0) {
     downloading = false;
 }
 
-bool ExpertMapLayer::init() {
+bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     if (!CCLayer::init())
         return false;
 
@@ -414,6 +414,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         dl_txt->setVisible(false);
         super_expert = true;
         downloading = false;
+        skips = 3;
         end_run_btn_menu->setVisible(true);
         Mod::get()->setSettingValue<std::string>("run-id", "");
         addMap();
