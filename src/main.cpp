@@ -171,7 +171,7 @@ class $modify(ExpertPauseLayer, PauseLayer) {
 		createQuickPopup("SKIP", fmt::format("Would you like to <cr>skip</c> this <cp>level</c>?\nYou have <cy>{} skip{}left</c>.", skips, plural), "NO", "YES", [this, obj](FLAlertLayer*, bool btn2) {
         if (btn2) {
             current_level++;
-			downloading = true;
+			if (current_level < 15) downloading = true;
 			skips--;
 			lives++; // compensation
 			PauseLayer::onQuit(obj);
@@ -220,8 +220,8 @@ class $modify(EndLevelLayer) {
 		if (super_expert) {
 			level_started = false;
 			lives += 1; // compensate for completion
-			downloading = true;
 			if (ids[current_level] == pl->m_level->m_levelID) current_level++;
+			if (current_level < 15) downloading = true;
 		}
 	}
 };

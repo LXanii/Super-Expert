@@ -128,9 +128,9 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     if (current_level_display > 15) current_level_display = 15;
     dl_count = 0;
 
-    dl_txt->setPosition({size.width/ 2, size.height/ 2});
+    dl_txt->setPosition({size.width/ 2, size.height/ 2 - 122.f});
     dl_txt->setVisible(false);
-    dl_txt->setScale(0.75);
+    dl_txt->setScale(0.6);
 
     CCMenu* back_btn_menu = CCMenu::create();
     CCMenu* start_btn_menu = CCMenu::create();
@@ -415,7 +415,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         skips = 3;
         end_run_btn_menu->setVisible(true);
         Mod::get()->setSettingValue<std::string>("run-id", "");
-        addMap();
+        if (current_level == 0) addMap();
         log::info("{}", leveldata[1].size());
     }
 } 
