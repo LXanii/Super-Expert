@@ -22,10 +22,6 @@ extern int skips;
 extern int current_level;
 extern std::vector<int> ids;
 
-void resetLives() {
-	lives = 30;
-}
-
 class $modify(PlayLayer) {
 
 CCLabelBMFont* lives_text;

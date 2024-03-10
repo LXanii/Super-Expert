@@ -34,6 +34,14 @@
 			"description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
 			"type": "bool",
 			"default": false
+		},
+		"skips": {
+			"name": "Skips",
+			"description": "Sets the amount of skips allowed in a run.\n<cr>SET THIS BEFORE A RUN</c>",
+			"type": "int",
+			"default": 3,
+			"min": 0,
+			"max": 99
 		}
 	}
 }

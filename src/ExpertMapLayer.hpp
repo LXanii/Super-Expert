@@ -12,7 +12,7 @@
 
 using namespace geode::prelude;
 
-int skips = 3;
+int skips = Mod::get()->getSettingValue<int64_t>("skips");
 int current_level = 0;
 extern int lives;
 bool super_expert = false;
@@ -48,7 +48,6 @@ public:
     void start_expert_run(CCObject*);
     void end_expert_run(CCObject*);
     void downloadLevel(CCObject*);
-    void copyRunID(CCObject*);
     void openSettings(CCObject*);
     void openDevs(CCObject*);
     void downloadLevels();
@@ -61,12 +60,11 @@ public:
     CCLabelBMFont* dl_txt;
     CCLabelBMFont* lvls_completed;
     CCMenu* end_run_btn_menu;
-    CCMenu* copy_btn_menu;
     CCMenu* settings_menu;
     CCMenu* devs_menu;
     CCMenuItemSpriteExtra* startBtn;
-    CCMenuItemSpriteExtra* copyBtn;
     CCMenuItemSpriteExtra* devBtn;
+    LoadingCircle* loading_circle;
 };
 
 void ExpertMapLayer::keyBackClicked() {
@@ -108,7 +106,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     if (!CCLayer::init())
         return false;
 
-    if (lives <= 0) expertReset();
+    if (lives <= 0) expertReset(); // this is what kicks out when u lose lives omg i found it mess with this later thanks me
 
     GameManager* manager = GameManager::sharedState();
     auto director = CCDirector::sharedDirector();
@@ -121,7 +119,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     CCLabelBMFont* lives_text = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
 	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
-    CCLabelBMFont* run_id = CCLabelBMFont::create("Share Run ID", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
     dl_txt = CCLabelBMFont::create("Fetching Level ID...", "bigFont.fnt");
     CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level_display).c_str(), "chatFont.fnt");
@@ -136,25 +133,18 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     CCMenu* start_btn_menu = CCMenu::create();
     
     end_run_btn_menu = CCMenu::create();
-    copy_btn_menu = CCMenu::create();
     settings_menu = CCMenu::create();
+
+    loading_circle = LoadingCircle::create();
+    addChild(loading_circle);
+    loading_circle->setVisible(false);
 
     CCSprite* settingsGear = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
     settingsGear->setScale(0.5);
 
-    auto backBtn = CCMenuItemSpriteExtra::create(
-        CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"),
-        this, menu_selector(ExpertMapLayer::onGoBack));
-
+    auto backBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"), this, menu_selector(ExpertMapLayer::onGoBack));
     auto settingsBtn = CCMenuItemSpriteExtra::create(settingsGear, this, menu_selector(ExpertMapLayer::openSettings));
-
-    startBtn = CCMenuItemSpriteExtra::create(
-        CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"),
-        this, menu_selector(ExpertMapLayer::start_expert_run));
-
-    copyBtn = CCMenuItemSpriteExtra::create(
-        CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"),
-        this, menu_selector(ExpertMapLayer::copyRunID));
+    startBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"), this, menu_selector(ExpertMapLayer::start_expert_run));
 
     //devBtn = CCMenuItemSpriteExtra::create(CCSprite::create("devs.png"_spr), this, menu_selector(ExpertMapLayer::openDevs));
 
@@ -206,9 +196,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     player->setScale(0.65);
     addChild(player, 2);
 
-    copy_btn_menu->setScale(0.8);
-    copy_btn_menu->setPosition({player->getPositionX() + 260, player->getPositionY() - 30});
-
     lives_text->setScale(0.6);
     lives_text->setOpacity(200);
     lives_text->setPosition({player->getPositionX() + 35,player->getPositionY() - 1.8f});
@@ -222,9 +209,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     start_game_text->setPosition(85,17);
     start_game_text->setScale(0.5);
 
-    run_id->setScale(0.6);
-    run_id->setPosition({85, 16.5});
-
     addChild(expert_run_bg, -10); // run first cuz bg thanks everyone
     addChild(lives_text);
     addChild(lives_text_x);
@@ -232,12 +216,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     addChild(lvls_completed);
     addChild(end_run_btn_menu);
     addChild(super_expert_lbl);
-
-    addChild(copy_btn_menu);
-    
-    copy_btn_menu->addChild(copyBtn);
-    copyBtn->addChild(run_id);
-    copyBtn->setVisible(false);
 
     addChild(settings_menu);
     settings_menu->addChild(settingsBtn);
@@ -343,37 +321,19 @@ void ExpertMapLayer::addMap() {
 
     dotsmenu->setPosition({29, 29});
 
-    // copyBtn->setVisible(true); shared run id button uncomment in future update thanks again me
-
     addChild(dotsmenu);
 }
 
 void ExpertMapLayer::start_expert_run(CCObject*) {
-    std::string run_id_val = Mod::get()->getSettingValue<std::string>("run-id");
+    skips = Mod::get()->getSettingValue<int64_t>("skips");
 
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
+    loading_circle->setVisible(true);
+    loading_circle->show();
     current_level = 0;
     downloading = true;
     downloadLevels();
-    //end_run_btn_menu->setVisible(true);
-    /*if (run_id_val != "") {
-        std::vector<std::string> levelids = splitString(run_id_val, ';');
-
-        for (int i = 0; i < levelids.size(); i++) {
-            log::info("{}", levelids[i]);
-        }
-
-    }
-    else {
-        downloading = true;
-        downloadLevels();
-    } */
-}
-
-void ExpertMapLayer::copyRunID(CCObject*) {
-    clipboard::write(sharelevels);
-    Notification::create("Run ID Copied to Clipboard.", CCSprite::createWithSpriteFrameName("GJ_completesIcon_001.png"), 2.0f)->show();
 }
 
 void ExpertMapLayer::downloadLevels() {
@@ -401,18 +361,17 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     std::string level = levelvect[rng];
     std::vector<std::string> leveldata = splitString(level, ':');
     log::info("{}", leveldata[1]);
+    if (loading_circle->isVisible()) loading_circle->setVisible(false);
     for (int i = 0; i < splitString(splitString(string, '#')[1], '|').size(); i++) {
         std::string split = splitString(splitString(string, '#')[1], '|')[i];
         std::vector<std::string> authorsplit = splitString(split, ':');
         authors.insert({stoi(authorsplit[0]), split });
     }
-    if (stoi(leveldata[1]) != NULL) {    
-        //sharelevels += leveldata[1] + ";"; pls dont remove need it for multi runs thx
+    if (stoi(leveldata[1]) != NULL) {
         ids.push_back(std::stoi(leveldata[1]));
         dl_txt->setVisible(false);
         super_expert = true;
         downloading = false;
-        skips = 3;
         end_run_btn_menu->setVisible(true);
         Mod::get()->setSettingValue<std::string>("run-id", "");
         if (current_level == 0) addMap();
