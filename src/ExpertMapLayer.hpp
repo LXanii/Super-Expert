@@ -18,6 +18,7 @@ bool super_expert = false;
 std::vector<int> ids;
 extern bool downloading;
 std::string sharelevels;
+std::unordered_map<int, std::string> authors;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -85,6 +86,11 @@ void ExpertMapLayer::downloadLevel(CCObject* self) {
 }
 
 void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
+    // I am sorry for this code C++ sucks
+    std::vector<std::string> authorsplit = splitString(authors[level->m_userID], ':');
+    level->m_creatorName = authorsplit[1];
+    level->m_accountID = stoi(authorsplit[2]);
+    log::info("{} {} {}", level->m_userID.value(), level->m_creatorName, level->m_accountID.value());
     if (Mod::get()->getSettingValue<bool>("level-info")) {
         CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, LevelInfoLayer::scene(level, false)));
         return;
@@ -384,10 +390,16 @@ void ExpertMapLayer::downloadLevels() {
 }
 
 void ExpertMapLayer::ondownloadfinished(std::string const& string) {
+    int rng = rand() % 10;
     std::vector<std::string> levelvect = splitString(string, '|');
-    std::string level = levelvect[rand() % 10];
+    std::string level = levelvect[rng];
     std::vector<std::string> leveldata = splitString(level, ':');
-    log::info("{}", leveldata[1]);
+    //llog::info("{}", leveldata[1]);
+    for (int i = 0; i < splitString(splitString(string, '#')[1], '|').size(); i++) {
+        std::string split = splitString(splitString(string, '#')[1], '|')[i];
+        std::vector<std::string> authorsplit = splitString(split, ':');
+        authors.insert({stoi(authorsplit[0]), split });
+    }
     dl_count++;
     dl_txt->setString(fmt::format("Levels Downloaded: {}/15", dl_count).c_str());
     if (dl_count < 15) {
@@ -410,6 +422,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
 void ExpertMapLayer::expertReset() {
     super_expert = false;
     ids.clear();
+    authors.clear();
     lives = 30;
     this->onGoBack(nullptr);
 }
