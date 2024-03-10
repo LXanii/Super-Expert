@@ -74,6 +74,7 @@ void ExpertMapLayer::keyBackClicked() {
 }
 
 void ExpertMapLayer::downloadLevel(CCObject* self) {
+    if (downloading) return;
     log::info("{}", self->getTag());
     GameLevelManager::sharedState()->m_levelDownloadDelegate = this;
     GameLevelManager::sharedState()->downloadLevel(self->getTag(), true); // fuck you rob
@@ -122,7 +123,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
     CCLabelBMFont* run_id = CCLabelBMFont::create("Share Run ID", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
-    dl_txt = CCLabelBMFont::create("Levels Downloaded: 0/15", "bigFont.fnt");
+    dl_txt = CCLabelBMFont::create("Fetching Level ID...", "bigFont.fnt");
     CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level_display).c_str(), "chatFont.fnt");
     if (current_level_display > 15) current_level_display = 15;
     dl_count = 0;
@@ -229,7 +230,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     addChild(lives_text_x);
     addChild(back_btn_menu);
     addChild(lvls_completed);
-    addChild(dl_txt);
     addChild(end_run_btn_menu);
     addChild(super_expert_lbl);
 
@@ -244,6 +244,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     settingsBtn->setPosition({243, 108});
 
     back_btn_menu->addChild(backBtn);
+    addChild(dl_txt);
     if (!super_expert) {
         end_run_btn_menu->setVisible(false);
         lvls_completed->setVisible(false);
@@ -253,6 +254,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
         lvls_completed->setVisible(false);
     }
     else {
+        if (downloading) downloadLevels();
         addMap();
         if (current_level == 15) {
             auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
@@ -352,6 +354,8 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
     current_level = 0;
+    downloading = true;
+    downloadLevels();
     //end_run_btn_menu->setVisible(true);
     /*if (run_id_val != "") {
         std::vector<std::string> levelids = splitString(run_id_val, ';');
@@ -365,8 +369,6 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
         downloading = true;
         downloadLevels();
     } */
-    downloading = true;
-    downloadLevels();
 }
 
 void ExpertMapLayer::copyRunID(CCObject*) {
@@ -375,6 +377,9 @@ void ExpertMapLayer::copyRunID(CCObject*) {
 }
 
 void ExpertMapLayer::downloadLevels() {
+    downloading = true;
+    dl_txt->setVisible(true);
+
     web::AsyncWebRequest()
         .userAgent("")
 		.postRequest()
@@ -401,25 +406,17 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         std::vector<std::string> authorsplit = splitString(split, ':');
         authors.insert({stoi(authorsplit[0]), split });
     }
-    dl_count++;
-    dl_txt->setString(fmt::format("Levels Downloaded: {}/15", dl_count).c_str());
     if (stoi(leveldata[1]) != NULL) {    
-        if (dl_count < 15) {
-            downloadLevels();
-            //sharelevels += leveldata[1] + ";"; pls dont remove need it for multi runs thx
-            ids.push_back(std::stoi(leveldata[1]));
-        }
-        else {
-            //sharelevels += leveldata[1];
-            ids.push_back(std::stoi(leveldata[1]));
-            dl_txt->setVisible(false);
-            super_expert = true;
-            downloading = false;
-            skips = 3;
-            end_run_btn_menu->setVisible(true);
-            Mod::get()->setSettingValue<std::string>("run-id", "");
-            addMap();
-        }
+        //sharelevels += leveldata[1] + ";"; pls dont remove need it for multi runs thx
+        ids.push_back(std::stoi(leveldata[1]));
+        dl_txt->setVisible(false);
+        super_expert = true;
+        downloading = false;
+        skips = 3;
+        end_run_btn_menu->setVisible(true);
+        Mod::get()->setSettingValue<std::string>("run-id", "");
+        addMap();
+        log::info("{}", leveldata[1].size());
     }
 } 
 
