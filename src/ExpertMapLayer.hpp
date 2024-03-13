@@ -231,7 +231,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
         lvls_completed->setVisible(false);
     }
     else {
-        if (downloading) downloadLevels();
+        (downloading) ? downloadLevels() : addMap();
         if (current_level == 15) {
             auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
             runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.4f), showCongrats));
@@ -335,6 +335,7 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
 void ExpertMapLayer::downloadLevels() {
     downloading = true;
     loading_circle->setVisible(true);
+    loading_circle->show();
     dl_txt->setVisible(true);
 
     web::AsyncWebRequest()
