@@ -20,7 +20,7 @@ bool downloading = false;
 
 extern int skips;
 extern int current_level;
-extern std::vector<int> ids;
+extern int ids;
 
 class $modify(PlayLayer) {
 
@@ -216,7 +216,7 @@ class $modify(EndLevelLayer) {
 		if (super_expert) {
 			level_started = false;
 			lives += 1; // compensate for completion
-			if (ids[current_level] == pl->m_level->m_levelID) current_level++;
+			if (ids == pl->m_level->m_levelID) current_level++;
 			if (current_level < 15) downloading = true;
 		}
 	}

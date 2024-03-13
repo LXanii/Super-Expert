@@ -16,7 +16,7 @@ int skips = Mod::get()->getSettingValue<int64_t>("skips");
 int current_level = 0;
 extern int lives;
 bool super_expert = false;
-std::vector<int> ids;
+int ids;
 extern bool downloading;
 std::string sharelevels;
 std::unordered_map<int, std::string> authors;
@@ -90,7 +90,6 @@ void ExpertMapLayer::levelDownloadFinished(GJGameLevel* level) {
     std::vector<std::string> authorsplit = splitString(authors[level->m_userID], ':');
     level->m_creatorName = authorsplit[1];
     level->m_accountID = stoi(authorsplit[2]);
-    log::info("{} {} {}", level->m_userID.value(), level->m_creatorName, level->m_accountID.value());
     if (Mod::get()->getSettingValue<bool>("level-info")) {
         CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, LevelInfoLayer::scene(level, false)));
         return;
@@ -233,7 +232,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     }
     else {
         if (downloading) downloadLevels();
-        addMap();
         if (current_level == 15) {
             auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
             runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.4f), showCongrats));
@@ -293,13 +291,13 @@ void ExpertMapLayer::addMap() {
                 stageBtn->setColor({ 92, 92, 92 });
             }
             stageBtn->setPosition(coord);
-            stageBtn->setTag(ids[i]);
+            stageBtn->setTag(ids);
             dotsmenu->addChild(stageBtn);
         }
         else {
             stage_sprite = CCSprite::createWithSpriteFrameName("worldLevelBtn_locked_001.png");
             stage_sprite->setPosition(coord);
-            stage_sprite->setTag(ids[i]);
+            stage_sprite->setTag(ids);
             dotsmenu->addChild(stage_sprite);
         }
         
@@ -329,15 +327,14 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
 
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
-    loading_circle->setVisible(true);
     loading_circle->show();
     current_level = 0;
-    downloading = true;
     downloadLevels();
 }
 
 void ExpertMapLayer::downloadLevels() {
     downloading = true;
+    loading_circle->setVisible(true);
     dl_txt->setVisible(true);
 
     web::AsyncWebRequest()
@@ -367,21 +364,17 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         std::vector<std::string> authorsplit = splitString(split, ':');
         authors.insert({stoi(authorsplit[0]), split });
     }
-    if (stoi(leveldata[1]) != NULL) {
-        ids.push_back(std::stoi(leveldata[1]));
-        dl_txt->setVisible(false);
-        super_expert = true;
-        downloading = false;
-        end_run_btn_menu->setVisible(true);
-        Mod::get()->setSettingValue<std::string>("run-id", "");
-        if (current_level == 0) addMap();
-        log::info("{}", leveldata[1].size());
-    }
+    ids = std::stoi(leveldata[1]);
+    dl_txt->setVisible(false);
+    downloading = false;
+    super_expert = true;
+    end_run_btn_menu->setVisible(true);
+    Mod::get()->setSettingValue<std::string>("run-id", "");
+    addMap();
 } 
 
 void ExpertMapLayer::expertReset() {
     super_expert = false;
-    ids.clear();
     authors.clear();
     lives = 30;
     skips = 3;
