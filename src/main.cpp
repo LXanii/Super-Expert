@@ -217,7 +217,7 @@ class $modify(EndLevelLayer) {
 			level_started = false;
 			lives += 1; // compensate for completion
 			if (ids == pl->m_level->m_levelID) current_level++;
-			if (current_level < 15) downloading = true;
+			if (current_level < 15) downloading = true; 
 		}
 	}
 };
