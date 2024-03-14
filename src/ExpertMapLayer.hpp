@@ -106,7 +106,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     if (!CCLayer::init())
         return false;
 
-    if (lives <= 0) {
+    if (lives < 0) {
         expertReset();
         auto showGameOver = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showGameOver));
         runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.2f), showGameOver));

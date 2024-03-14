@@ -81,12 +81,12 @@ CCLabelBMFont* lives_bracket;
 				first_init = false; // fat retard rob
 			}
 			else {
-				if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
+				if (lives > 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
 			}
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
 			
-			if (lives <= 0) {
+			if (lives < -1) {
 				super_expert = false;
 				first_init = true;
 				ExpertMapLayer::replaceScene();
