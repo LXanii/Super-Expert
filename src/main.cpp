@@ -86,7 +86,7 @@ CCLabelBMFont* lives_bracket;
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
 			
-			if (lives < 0) {
+			if (lives <= 0) {
 				super_expert = false;
 				first_init = true;
 				ExpertMapLayer::replaceScene();
