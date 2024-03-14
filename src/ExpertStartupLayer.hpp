@@ -22,7 +22,7 @@ public:
     void loadLevel();
 
     GJGameLevel* m_level;
-}; 
+};
 
 bool ExpertStartupLayer::init(GJGameLevel* level) {
     if (!CCLayer::init())

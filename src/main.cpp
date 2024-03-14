@@ -102,7 +102,6 @@ CCLabelBMFont* lives_bracket;
 		} 
 
 	void onQuit() {
-		//resetLives(); // FOR TESTING REMOVE LATER WHEN DONE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		first_init = true;
 		log::info("quit true");
 		if (super_expert) {
@@ -217,7 +216,7 @@ class $modify(EndLevelLayer) {
 			level_started = false;
 			lives += 1; // compensate for completion
 			if (ids == pl->m_level->m_levelID) current_level++;
-			if (current_level < 15) downloading = true; 
+			if (current_level < 15) downloading = true;
 		}
 	}
 };

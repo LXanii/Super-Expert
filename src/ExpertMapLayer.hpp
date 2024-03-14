@@ -46,10 +46,10 @@ public:
 
     void onGoBack(CCObject*);
     void start_expert_run(CCObject*);
-    void end_expert_run(CCObject*);
     void downloadLevel(CCObject*);
     void openSettings(CCObject*);
     void openDevs(CCObject*);
+    void openDiscord(CCObject*);
     void downloadLevels();
     void addMap();
     void ondownloadfinished(std::string const&);
@@ -124,15 +124,17 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     if (current_level_display > 15) current_level_display = 15;
     dl_count = 0;
 
-    dl_txt->setPosition({size.width/ 2, size.height/ 2 - 122.f});
+    dl_txt->setPosition({size.width/ 2, size.height/ 2 + 65.f});
     dl_txt->setVisible(false);
     dl_txt->setScale(0.6);
 
     CCMenu* back_btn_menu = CCMenu::create();
     CCMenu* start_btn_menu = CCMenu::create();
+    CCMenu* discord_btn_menu = CCMenu::create();
     
     end_run_btn_menu = CCMenu::create();
     settings_menu = CCMenu::create();
+    devs_menu = CCMenu::create();
 
     loading_circle = LoadingCircle::create();
     addChild(loading_circle);
@@ -141,11 +143,25 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     CCSprite* settingsGear = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
     settingsGear->setScale(0.5);
 
+    CCSprite* discordSprite = CCSprite::createWithSpriteFrameName("gj_discordIcon_001.png");
+    discordSprite->setScale(0.75);
+
+    CCSprite* devsSprite = CCSprite::create("devs.png"_spr);
+    devsSprite->setScale(0.6);
+
     auto backBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"), this, menu_selector(ExpertMapLayer::onGoBack));
     auto settingsBtn = CCMenuItemSpriteExtra::create(settingsGear, this, menu_selector(ExpertMapLayer::openSettings));
+    auto discordBtn = CCMenuItemSpriteExtra::create(discordSprite, this, menu_selector(ExpertMapLayer::openDiscord));
     startBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"), this, menu_selector(ExpertMapLayer::start_expert_run));
+    devBtn = CCMenuItemSpriteExtra::create(devsSprite, this, menu_selector(ExpertMapLayer::openDevs));
 
-    //devBtn = CCMenuItemSpriteExtra::create(CCSprite::create("devs.png"_spr), this, menu_selector(ExpertMapLayer::openDevs));
+    addChild(devs_menu);
+    devs_menu->addChild(devBtn);
+    devs_menu->setPosition({93, 290});
+
+    addChild(discord_btn_menu);
+    discord_btn_menu->addChild(discordBtn);
+    discord_btn_menu->setPosition({527.5f,245});
 
 	auto bottomLeft = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
 	auto topRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
@@ -218,7 +234,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
 
     addChild(settings_menu);
     settings_menu->addChild(settingsBtn);
-    settingsBtn->setPosition({243, 108});
+    settingsBtn->setPosition({243, 117});
 
     back_btn_menu->addChild(backBtn);
     addChild(dl_txt);
@@ -239,6 +255,8 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
         }
     }
 
+    handleTouchPriority(this);
+
     return true;
 }
 
@@ -246,9 +264,6 @@ void ExpertMapLayer::showCongrats() {
     FLAlertLayer::create("Congratulations!", "You successfully completed\n<cp>Super Expert</c>!", "OK")->show();
 }
 
-void ExpertMapLayer::openDevs(CCObject*) {
-    FLAlertLayer::create("Thanks for Downloading!", "<cy>Thanks for downloading</c>!\n\n<cr>Note:</c> This mod is currently in beta, as there is more we plan to add!\nAny suggestions / feedback is appreciated!\n\n<cg>From: Xanii & Adya</c><cp><3</c>", "OK");
-}
 
 void ExpertMapLayer::addMap() {
 
@@ -332,6 +347,15 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
     downloadLevels();
 }
 
+void ExpertMapLayer::openDevs(CCObject*) {
+    FLAlertLayer::create("Thank You!", "<cy>Thanks for downloading!</c>\n\n<cr>Note:</c> This mod is currently in beta, as there is more we plan to add!\nAny suggestions / feedback is appreciated!\n\n<cg>From: Xanii & Adya</c> <cp><3</c>", "OK")->show();
+}
+
+void ExpertMapLayer::openDiscord(CCObject*) {
+    geode::createQuickPopup("Join Discord", "Would you like to join the <cy>Official Discord Server?</c>", "No", "Yes", [] (auto fl, bool btn2) {
+                if (btn2) geode::utils::web::openLinkInBrowser("https://discord.gg/W3BkznGTV8");});
+}
+
 void ExpertMapLayer::downloadLevels() {
     downloading = true;
     loading_circle->setVisible(true);
@@ -365,7 +389,15 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         std::vector<std::string> authorsplit = splitString(split, ':');
         authors.insert({stoi(authorsplit[0]), split });
     }
-    ids = std::stoi(leveldata[1]);
+    try {
+        ids = std::stoi(leveldata[1]);
+    }
+    catch (std::invalid_argument const& ex) // FIX THIS SHIT FOR ANDROID IMA KMSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+    {
+        log::info("{}", ex.what());
+        downloadLevels();
+    }
+
     dl_txt->setVisible(false);
     downloading = false;
     super_expert = true;
