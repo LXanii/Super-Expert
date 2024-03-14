@@ -17,6 +17,7 @@ extern bool super_expert;
 int extra_lives;
 bool level_started = false;
 bool downloading = false;
+bool levelEnd = false;
 
 extern int skips;
 extern int current_level;
@@ -77,28 +78,31 @@ CCLabelBMFont* lives_bracket;
 
 	void resetLevel() {
 		if (super_expert) {
-			if (first_init) {
-				first_init = false; // fat retard rob
-			}
-			else {
-				if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
-			}
-			log::info("Player has {} lives. resetLevel", lives);
-			lives--;
-			
-			if (lives + 2 <= 0) {
-				super_expert = false;
-				first_init = true;
-				ExpertMapLayer::replaceScene();
-			}
-			else {
-				PlayLayer::resetLevel();
-			}
-			log::info("{}", extra_lives);
-
-			if (level_started) {
-				log::info("level_started");
+			if (!levelEnd) {
+				if (first_init) {
+					first_init = false; // fat retard rob
 				}
+				else {
+					if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
+				}
+				log::info("Player has {} lives. resetLevel", lives);
+				lives--;
+				
+				if (lives + 2 <= 0) {
+					super_expert = false;
+					first_init = true;
+					ExpertMapLayer::replaceScene();
+				}
+				else {
+					PlayLayer::resetLevel();
+				}
+				log::info("{}", extra_lives);
+
+				if (level_started) {
+					log::info("level_started");
+					}
+				}
+			else PlayLayer::onQuit();
 			}
 		else PlayLayer::resetLevel();
 		} 
@@ -134,12 +138,8 @@ class $modify(LevelInfoLayer) {
 
 class $modify(ExpertPauseLayer, PauseLayer) {
 	void onPracticeMode(cocos2d::CCObject* sender) {
-		if (super_expert) {
-			FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
-		}
-		else {
-			PauseLayer::onPracticeMode(sender);
-		}
+		if (super_expert) FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
+		else PauseLayer::onPracticeMode(sender);
 	}
 
 	void customSetup() {
@@ -213,6 +213,7 @@ class $modify(ExpertCallback, CreatorLayer) {
 class $modify(EndLevelLayer) {
 	void showLayer(bool p0) { // find whatever gets called when u hit the end
 		EndLevelLayer::showLayer(p0);
+		levelEnd = true;
 		PlayLayer* pl = PlayLayer::get(); // changed to make porting to mac easier :]
 		if (super_expert) {
 			level_started = false;

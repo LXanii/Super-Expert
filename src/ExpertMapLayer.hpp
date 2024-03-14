@@ -12,14 +12,15 @@
 
 using namespace geode::prelude;
 
-int skips = Mod::get()->getSettingValue<int64_t>("skips");
 int current_level = 0;
-extern int lives;
-bool super_expert = false;
 int ids;
-extern bool downloading;
-std::string sharelevels;
+int skips = Mod::get()->getSettingValue<int64_t>("skips");
+bool super_expert = false;
 std::unordered_map<int, std::string> authors;
+std::string sharelevels;
+extern int lives;
+extern bool levelEnd;
+extern bool downloading;
 
 std::vector<std::string> splitString(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
@@ -60,6 +61,7 @@ public:
     int dl_count;
     CCLabelBMFont* dl_txt;
     CCLabelBMFont* lvls_completed;
+    CCLabelBMFont* skips_left;
     CCMenu* end_run_btn_menu;
     CCMenu* settings_menu;
     CCMenu* devs_menu;
@@ -124,6 +126,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
 	CCLabelBMFont* lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
     CCLabelBMFont* start_game_text = CCLabelBMFont::create("Start Expert Run", "bigFont.fnt");
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
+    skips_left = CCLabelBMFont::create(fmt::format("Skips Left: {}/{}", skips, Mod::get()->getSettingValue<int64_t>("skips")).c_str(), "chatFont.fnt");
     dl_txt = CCLabelBMFont::create("Fetching Level ID...", "bigFont.fnt");
     CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level_display).c_str(), "chatFont.fnt");
     if (current_level_display > 15) current_level_display = 15;
@@ -185,6 +188,10 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
 	addChild(bottomLeft, 1);
 	addChild(topRight, 1);
 	addChild(bottomRight, 1); // thanks fig
+
+    skips_left->setPosition({bottomRight->getPositionX() - 100.f, lives_text->getPositionY() + 10});
+    addChild(skips_left);
+    skips_left->setVisible(false);
 
     back_btn_menu->setPosition(size.width / 2 - 261, size.height - 30); // exit button position
     end_run_btn_menu->setPosition({back_btn_menu->getPositionX(), back_btn_menu->getPositionY() - 20});
@@ -343,10 +350,13 @@ void ExpertMapLayer::addMap() {
     dotsmenu->setPosition({29, 29});
 
     addChild(dotsmenu);
+    skips_left->setVisible(true);
 }
 
 void ExpertMapLayer::start_expert_run(CCObject*) {
     skips = Mod::get()->getSettingValue<int64_t>("skips");
+
+    skips_left->setString(fmt::format("Skips Left: {}/{}", skips, Mod::get()->getSettingValue<int64_t>("skips")).c_str());
 
     dl_txt->setVisible(true);
     startBtn->setVisible(false);
@@ -369,6 +379,7 @@ void ExpertMapLayer::downloadLevels() {
     loading_circle->setVisible(true);
     loading_circle->show();
     dl_txt->setVisible(true);
+    if (skips != Mod::get()->getSettingValue<int64_t>("skips")) skips_left->setString(fmt::format("Skips Left: {}/{}", skips, Mod::get()->getSettingValue<int64_t>("skips")).c_str());
 
     web::AsyncWebRequest()
         .userAgent("")
@@ -406,10 +417,11 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
         downloadLevels();
     }
 
-    dl_txt->setVisible(false);
-    downloading = false;
-    super_expert = true;
     end_run_btn_menu->setVisible(true);
+    dl_txt->setVisible(false);
+    super_expert = true;
+    downloading = false;
+    levelEnd = false;
     Mod::get()->setSettingValue<std::string>("run-id", "");
     addMap();
 } 
@@ -417,8 +429,8 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
 void ExpertMapLayer::expertReset() {
     super_expert = false;
     authors.clear();
-    lives = 30;
-    skips = 3;
+    lives = 30; // keep this later i know im gonna remove it, its for actually resetting lives & skips when run is ended
+    skips = Mod::get()->getSettingValue<int64_t>("skips");
 }
 
 void ExpertMapLayer::onGoBack(CCObject*) {
