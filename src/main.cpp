@@ -86,12 +86,14 @@ CCLabelBMFont* lives_bracket;
 			log::info("Player has {} lives. resetLevel", lives);
 			lives--;
 			
-			if (lives + 2 <= 0) {
-				FLAlertLayer::create("Out of Lives!", "It looks like you've <cr>ran out of lives</c>!", "OK");
-				PlayLayer::onQuit();
+			if (lives < 0) {
+				super_expert = false;
+				first_init = true;
 				ExpertMapLayer::replaceScene();
 			}
-			else PlayLayer::resetLevel();
+			else {
+				PlayLayer::resetLevel();
+			}
 			log::info("{}", extra_lives);
 
 			if (level_started) {

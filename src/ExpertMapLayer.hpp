@@ -55,6 +55,7 @@ public:
     void ondownloadfinished(std::string const&);
     void expertReset();
     void showCongrats();
+    void showGameOver();
 
     int dl_count;
     CCLabelBMFont* dl_txt;
@@ -105,7 +106,11 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     if (!CCLayer::init())
         return false;
 
-    if (lives <= 0) expertReset(); // this is what kicks out when u lose lives omg i found it mess with this later thanks me
+    if (lives <= 0) {
+        expertReset();
+        auto showGameOver = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showGameOver));
+        runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.2f), showGameOver));
+    }
 
     GameManager* manager = GameManager::sharedState();
     auto director = CCDirector::sharedDirector();
@@ -250,7 +255,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
         (downloading) ? downloadLevels() : addMap();
         if (current_level == 15) {
             auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
-            runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.4f), showCongrats));
+            runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.2f), showCongrats));
             current_level++;
         }
     }
@@ -264,6 +269,9 @@ void ExpertMapLayer::showCongrats() {
     FLAlertLayer::create("Congratulations!", "You successfully completed\n<cp>Super Expert</c>!", "OK")->show();
 }
 
+void ExpertMapLayer::showGameOver() {
+    FLAlertLayer::create("Out of Lives!", "It looks like you've <cr>ran out of lives</c>!", "OK")->show();
+}
 
 void ExpertMapLayer::addMap() {
 
@@ -411,7 +419,6 @@ void ExpertMapLayer::expertReset() {
     authors.clear();
     lives = 30;
     skips = 3;
-    this->onGoBack(nullptr);
 }
 
 void ExpertMapLayer::onGoBack(CCObject*) {
@@ -422,6 +429,7 @@ void ExpertMapLayer::onGoBack(CCObject*) {
     if (super_expert && !downloading) createQuickPopup("End Expert Run", "Would you like to <cr>end</c> your <cp>expert run</c>?", "NO", "YES", [this](FLAlertLayer*, bool btn2) {
         if (btn2) {
             expertReset(); 
+            this->onGoBack(nullptr);
             CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
         }
         });
