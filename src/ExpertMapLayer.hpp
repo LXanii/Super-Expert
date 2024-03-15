@@ -51,11 +51,12 @@ public:
     void openSettings(CCObject*);
     void openDevs(CCObject*);
     void openDiscord(CCObject*);
+    void showAllLevels(CCObject*);
     void downloadLevels();
     void addMap();
     void ondownloadfinished(std::string const&);
     void expertReset();
-    void showCongrats();
+    void showCongrats(CCObject*);
     void showGameOver();
 
     int dl_count;
@@ -128,6 +129,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     CCLabelBMFont* super_expert_lbl = CCLabelBMFont::create("Super Expert Run", "goldFont.fnt");
     skips_left = CCLabelBMFont::create(fmt::format("Skips Left: {}/{}", skips, Mod::get()->getSettingValue<int64_t>("skips")).c_str(), "chatFont.fnt");
     dl_txt = CCLabelBMFont::create("Fetching Level ID...", "bigFont.fnt");
+    
     CCLabelBMFont* lvls_completed = CCLabelBMFont::create(fmt::format("Levels Complete: {}/15", current_level_display).c_str(), "chatFont.fnt");
     if (current_level_display > 15) current_level_display = 15;
     dl_count = 0;
@@ -161,7 +163,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     auto settingsBtn = CCMenuItemSpriteExtra::create(settingsGear, this, menu_selector(ExpertMapLayer::openSettings));
     auto discordBtn = CCMenuItemSpriteExtra::create(discordSprite, this, menu_selector(ExpertMapLayer::openDiscord));
     startBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"), this, menu_selector(ExpertMapLayer::start_expert_run));
-    devBtn = CCMenuItemSpriteExtra::create(devsSprite, this, menu_selector(ExpertMapLayer::openDevs));
+    devBtn = CCMenuItemSpriteExtra::create(devsSprite, this, menu_selector(ExpertMapLayer::showCongrats));
 
     addChild(devs_menu);
     devs_menu->addChild(devBtn);
@@ -261,8 +263,8 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     else {
         (downloading) ? downloadLevels() : addMap();
         if (current_level == 15) {
-            auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
-            runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.2f), showCongrats));
+            //auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
+            //runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.3f), showCongrats));
             current_level++;
         }
     }
@@ -272,8 +274,29 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     return true;
 }
 
-void ExpertMapLayer::showCongrats() {
-    FLAlertLayer::create("Congratulations!", "You successfully completed\n<cp>Super Expert</c>!", "OK")->show();
+void ExpertMapLayer::showCongrats(CCObject*) {
+    FLAlertLayer* congrats = FLAlertLayer::create("Congratulations", "You have successfully completed\n<cp>Super Expert</c>!", "OK");
+    congrats->show();
+
+    auto main_layer = static_cast<CCNode*>(congrats->getChildren()->objectAtIndex(0)); // thanks for NOTHING getChildbyID! asshole
+
+    CCSprite* showLevels = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
+    CCMenu* showLevelMenu = CCMenu::create();
+    CCMenuItemSpriteExtra* showLevelBtn = CCMenuItemSpriteExtra::create(showLevels, this, menu_selector(ExpertMapLayer::showAllLevels));    
+
+    showLevels->setPosition({155, 75.5});
+    showLevels->setScale(1.025);
+
+    main_layer->addChild(showLevelMenu, 1);
+
+    showLevelMenu->setID("levels");
+    showLevelMenu->addChild(showLevelBtn);
+    handleTouchPriority(this, true);
+
+}
+
+void ExpertMapLayer::showAllLevels(CCObject*) {
+    FLAlertLayer::create("Level List", sharelevels, "OK")->show();
 }
 
 void ExpertMapLayer::showGameOver() {
@@ -410,6 +433,7 @@ void ExpertMapLayer::ondownloadfinished(std::string const& string) {
     }
     try {
         ids = std::stoi(leveldata[1]);
+        sharelevels += fmt::format("{}\n", leveldata[1]);
     }
     catch (std::invalid_argument const& ex) // FIX THIS SHIT FOR ANDROID IMA KMSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
     {
