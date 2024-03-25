@@ -179,6 +179,9 @@ class $modify(ExpertPauseLayer, PauseLayer) {
 
 class $modify(ExpertCallback, CreatorLayer) {
 
+CCSprite* expertBtnSprite;
+CCMenuItemSpriteExtra* expertButton;
+
 	bool init() {
 		bool result = CreatorLayer::init();
 		auto director = CCDirector::sharedDirector();
@@ -190,17 +193,17 @@ class $modify(ExpertCallback, CreatorLayer) {
 		CCMenuItemSpriteExtra* versusButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("versus-button"));
 		CCMenuItemSpriteExtra* questButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("quests-button"));
 
-		CCSprite* expertBtnSprite = CCSprite::create("super_expert_btn.png"_spr);
-		expertBtnSprite->setScale(0.805);
+		m_fields->expertBtnSprite = CCSprite::create("super_expert_btn.png"_spr);
+		m_fields->expertBtnSprite->setScale(0.805);
 
-		CCMenuItemSpriteExtra* expertButton = CCMenuItemSpriteExtra::create(expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
+		m_fields->expertButton = CCMenuItemSpriteExtra::create(m_fields->expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
 
 		versusButton->setVisible(false);
 
-		expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
-		expertButton->setID("super-expert-button");
+		m_fields->expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
+		m_fields->expertButton->setID("super-expert-button");
 		
-		creatorButtons->addChild(expertButton);
+		creatorButtons->addChild(m_fields->expertButton);
 
 		return result;
 	}

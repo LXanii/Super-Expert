@@ -56,7 +56,7 @@ public:
     void addMap();
     void ondownloadfinished(std::string const&);
     void expertReset();
-    void showCongrats(CCObject*);
+    void showCongrats();
     void showGameOver();
 
     int dl_count;
@@ -66,6 +66,7 @@ public:
     CCMenu* end_run_btn_menu;
     CCMenu* settings_menu;
     CCMenu* devs_menu;
+    CCMenu* showLevelMenu;
     CCMenuItemSpriteExtra* startBtn;
     CCMenuItemSpriteExtra* devBtn;
     LoadingCircle* loading_circle;
@@ -138,17 +139,20 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     dl_txt->setVisible(false);
     dl_txt->setScale(0.6);
 
+    loading_circle = LoadingCircle::create();
+    addChild(loading_circle);
+    loading_circle->setVisible(false);
+
+    // menus & assets below
+
     CCMenu* back_btn_menu = CCMenu::create();
     CCMenu* start_btn_menu = CCMenu::create();
     CCMenu* discord_btn_menu = CCMenu::create();
     
+    showLevelMenu = CCMenu::create();
     end_run_btn_menu = CCMenu::create();
     settings_menu = CCMenu::create();
     devs_menu = CCMenu::create();
-
-    loading_circle = LoadingCircle::create();
-    addChild(loading_circle);
-    loading_circle->setVisible(false);
 
     CCSprite* settingsGear = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
     settingsGear->setScale(0.5);
@@ -159,19 +163,34 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     CCSprite* devsSprite = CCSprite::create("devs.png"_spr);
     devsSprite->setScale(0.6);
 
+    CCSprite* showLevels = CCSprite::create("levels.png"_spr);
+    showLevels->setScale(0.55);
+
     auto backBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"), this, menu_selector(ExpertMapLayer::onGoBack));
     auto settingsBtn = CCMenuItemSpriteExtra::create(settingsGear, this, menu_selector(ExpertMapLayer::openSettings));
     auto discordBtn = CCMenuItemSpriteExtra::create(discordSprite, this, menu_selector(ExpertMapLayer::openDiscord));
+    auto showLevelBtn = CCMenuItemSpriteExtra::create(showLevels, this, menu_selector(ExpertMapLayer::showAllLevels));    
     startBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_longBtn03_001.png"), this, menu_selector(ExpertMapLayer::start_expert_run));
-    devBtn = CCMenuItemSpriteExtra::create(devsSprite, this, menu_selector(ExpertMapLayer::showCongrats));
+    devBtn = CCMenuItemSpriteExtra::create(devsSprite, this, menu_selector(ExpertMapLayer::openDevs));
+
+    addChild(discord_btn_menu);
+    discord_btn_menu->addChild(discordBtn);
+    discord_btn_menu->setPosition({527.5f,245});
+
+    addChild(showLevelMenu);
+    showLevelMenu->addChild(showLevelBtn);
+    showLevelMenu->setPosition(discord_btn_menu->getPositionX(), discord_btn_menu->getPositionY() - 33);
+    showLevelMenu->setVisible(false);
 
     addChild(devs_menu);
     devs_menu->addChild(devBtn);
     devs_menu->setPosition({93, 290});
 
-    addChild(discord_btn_menu);
-    discord_btn_menu->addChild(discordBtn);
-    discord_btn_menu->setPosition({527.5f,245});
+    addChild(settings_menu);
+    settings_menu->addChild(settingsBtn);
+    settingsBtn->setPosition({243, 117});
+    
+    // end of menus
 
 	auto bottomLeft = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
 	auto topRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
@@ -246,9 +265,6 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     addChild(end_run_btn_menu);
     addChild(super_expert_lbl);
 
-    addChild(settings_menu);
-    settings_menu->addChild(settingsBtn);
-    settingsBtn->setPosition({243, 117});
 
     back_btn_menu->addChild(backBtn);
     addChild(dl_txt);
@@ -263,8 +279,8 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     else {
         (downloading) ? downloadLevels() : addMap();
         if (current_level == 15) {
-            //auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
-            //runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.3f), showCongrats));
+            auto showCongrats = CCCallFunc::create(this, callfunc_selector(ExpertMapLayer::showCongrats));
+            runAction(CCSequence::createWithTwoActions(CCDelayTime::create(0.3f), showCongrats));
             current_level++;
         }
     }
@@ -274,33 +290,16 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     return true;
 }
 
-void ExpertMapLayer::showCongrats(CCObject*) {
-    FLAlertLayer* congrats = FLAlertLayer::create("Congratulations", "You have successfully completed\n<cp>Super Expert</c>!", "OK");
-    congrats->show();
-
-    auto main_layer = static_cast<CCNode*>(congrats->getChildren()->objectAtIndex(0)); // thanks for NOTHING getChildbyID! asshole
-
-    CCSprite* showLevels = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
-    CCMenu* showLevelMenu = CCMenu::create();
-    CCMenuItemSpriteExtra* showLevelBtn = CCMenuItemSpriteExtra::create(showLevels, this, menu_selector(ExpertMapLayer::showAllLevels));    
-
-    showLevels->setPosition({155, 75.5});
-    showLevels->setScale(1.025);
-
-    main_layer->addChild(showLevelMenu, 1);
-
-    showLevelMenu->setID("levels");
-    showLevelMenu->addChild(showLevelBtn);
-    handleTouchPriority(this, true);
-
-}
-
-void ExpertMapLayer::showAllLevels(CCObject*) {
-    FLAlertLayer::create("Level List", sharelevels, "OK")->show();
+void ExpertMapLayer::showCongrats() {
+    FLAlertLayer::create("Congratulations", "You have successfully completed\n<cp>Super Expert</c>!", "OK")->show();
 }
 
 void ExpertMapLayer::showGameOver() {
     FLAlertLayer::create("Out of Lives!", "It looks like you've <cr>ran out of lives</c>!", "OK")->show();
+}
+
+void ExpertMapLayer::showAllLevels(CCObject*) {
+    FLAlertLayer::create("Level List", sharelevels, "OK")->show();
 }
 
 void ExpertMapLayer::addMap() {
@@ -374,6 +373,7 @@ void ExpertMapLayer::addMap() {
 
     addChild(dotsmenu);
     skips_left->setVisible(true);
+    showLevelMenu->setVisible(true);
 }
 
 void ExpertMapLayer::start_expert_run(CCObject*) {
@@ -385,6 +385,7 @@ void ExpertMapLayer::start_expert_run(CCObject*) {
     startBtn->setVisible(false);
     loading_circle->show();
     current_level = 0;
+    sharelevels.clear();
     downloadLevels();
 }
 

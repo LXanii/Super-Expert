@@ -1,7 +1,11 @@
 # 1.0.0-beta.5
 
-- Added skips level on the map
-- Fixed bug causing completed levels to be over 15
+- Added skips used on map layer
+- Added level list
+- Fixed bug allowing multiple completions of a level
+- Fixed bug w/ lives not updating to new amounts
+- More crash fixes
+- New logo (Thanks to Rue <3)
 
 # 1.0.0-beta.4
 
