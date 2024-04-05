@@ -4,6 +4,7 @@
 #include <Geode/modify/CreatorLayer.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
+#include <Geode/modify/GJBaseGameLayer.hpp>
 
 #include "ExpertMapLayer.hpp"
 
@@ -18,6 +19,7 @@ int extra_lives;
 bool level_started = false;
 bool downloading = false;
 bool levelEnd = false;
+int coin_lives = 0;
 
 extern int skips;
 extern int current_level;
@@ -31,14 +33,14 @@ CCLabelBMFont* lives_bracket;
 
 	bool init(GJGameLevel* level, bool first, bool second) {
 		bool result = PlayLayer::init(level, first, second);
-		log::info("Player has {} lives. init", lives);
+		//log::info("Player has {} lives. init", lives);
 		if (super_expert) {
 			if (!level_started) {
 				level_started = true;
 				extra_lives = 1;
 			}
 
-			log::info("{}", extra_lives);
+			//log::info("{}", extra_lives);
 
 			m_fields->lives_text = CCLabelBMFont::create(std::to_string(lives + 1).c_str(), "gjFont59.fnt");
 			m_fields->lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
@@ -67,7 +69,9 @@ CCLabelBMFont* lives_bracket;
 			m_fields->lives_text_x->setScale(0.6);
 			m_fields->lives_text_x->setOpacity(200);
 			m_fields->lives_text_x->setPosition({m_fields->lives_text->getPositionX() - 18, m_fields->lives_text->getPositionY()});
-
+			
+			if (lives >= 99) m_fields->lives_text->setPosition({m_fields->lives_text->getPositionX() + 5, m_fields->lives_text->getPositionY()});
+			log::info("{}", lives);
 			addChild(m_fields->lives_text, 100);
 			addChild(m_fields->lives_text_x, 100);
 			
@@ -77,6 +81,7 @@ CCLabelBMFont* lives_bracket;
 	}
 
 	void resetLevel() {
+		coin_lives = 0;
 		if (super_expert) {
 			if (!levelEnd) {
 				if (first_init) {
@@ -85,7 +90,7 @@ CCLabelBMFont* lives_bracket;
 				else {
 					if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
 				}
-				log::info("Player has {} lives. resetLevel", lives);
+				//log::info("Player has {} lives. resetLevel", lives);
 				lives--;
 				
 				if (lives + 2 <= 0) {
@@ -96,10 +101,10 @@ CCLabelBMFont* lives_bracket;
 				else {
 					PlayLayer::resetLevel();
 				}
-				log::info("{}", extra_lives);
+				//log::info("{}", extra_lives);
 
 				if (level_started) {
-					log::info("level_started");
+					//log::info("level_started");
 					}
 				}
 			else PlayLayer::onQuit();
@@ -109,7 +114,6 @@ CCLabelBMFont* lives_bracket;
 
 	void onQuit() {
 		first_init = true;
-		log::info("quit true");
 		if (super_expert) {
 			ExpertMapLayer::replaceScene();
 		}
@@ -219,10 +223,22 @@ class $modify(EndLevelLayer) {
 		levelEnd = true;
 		PlayLayer* pl = PlayLayer::get(); // changed to make porting to mac easier :]
 		if (super_expert) {
+			log::info("coin lives: {}", coin_lives);
 			level_started = false;
 			lives += 1; // compensate for completion
 			if (ids == pl->m_level->m_levelID) current_level++;
 			if (current_level < 15) downloading = true;
+			if (Mod::get()->getSettingValue<bool>("coin-lives")) lives += coin_lives;
+			coin_lives = 0;
 		}
 	}
+};
+
+class $modify(GJBaseGameLayer) { // 1329 user coin pickup | 0x19d100 address make sure to submit l8r
+	void pickupItem(EffectGameObject *p0) {
+		if (super_expert) {
+        	if (p0->m_objectID == 1329) coin_lives++;
+		}
+        GJBaseGameLayer::pickupItem(p0);
+    }
 };

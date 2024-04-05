@@ -7,7 +7,7 @@
 
 using namespace geode::prelude;
 
-int lives = 30;
+int lives = Mod::get()->getSettingValue<int64_t>("lives");
 
 class ExpertStartupLayer : public CCLayer {
 protected:
@@ -71,6 +71,9 @@ bool ExpertStartupLayer::init(GJGameLevel* level) {
 
     CCLabelBMFont* lives_txt = CCLabelBMFont::create(std::to_string(lives).c_str(), "gjFont59.fnt");
     lives_txt->setPosition({size.width / 2 + 99.5f, size.height / 2 + 22.5f});
+
+    if (lives >= 100) lives_txt->setPosition({lives_txt->getPositionX() + 10, lives_txt->getPositionY()}); // thanks mfs who get 100 lives
+
     lives_txt->setScale(1.625f);
     
     this->addChild(level_name);

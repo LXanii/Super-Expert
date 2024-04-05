@@ -4,7 +4,7 @@
 		"win": "2.204",
 		"android": "2.205"
 		},
-	"version": "v1.0.0-beta.5",
+	"version": "v1.0.0",
 	"id": "xanii.super_expert",
 	"name": "Super Expert",
 	"developers": [
@@ -29,17 +29,37 @@
     },
 	"repository": "https://github.com/LXanii/Super-Expert",
 	"settings": {
+		"map-music": {
+			"name": "Map Music",
+			"description": "Toggle on or off the super expert music whilst in the map",
+			"type": "bool",
+			"default": true
+		},
 		"level-info": {
 			"name": "Level Info",
 			"description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
 			"type": "bool",
 			"default": false
 		},
+		"coin-lives": {
+			"name": "Coin Lives",
+			"description": "Gives the player lives for any coins they may pick up in a run",
+			"type": "bool",
+			"default": true
+		},
 		"skips": {
 			"name": "Skips",
 			"description": "Sets the amount of skips allowed in a run.\n<cr>SET THIS BEFORE A RUN</c>",
 			"type": "int",
 			"default": 3,
+			"min": 0,
+			"max": 99
+		},
+		"lives": {
+			"name": "Lives",
+			"description": "Sets the amount of lives per run.\n<cr>SET THIS BEFORE A RUN</c>",
+			"type": "int",
+			"default": 30,
 			"min": 0,
 			"max": 99
 		}
