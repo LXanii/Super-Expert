@@ -33,14 +33,14 @@ CCLabelBMFont* lives_bracket;
 
 	bool init(GJGameLevel* level, bool first, bool second) {
 		bool result = PlayLayer::init(level, first, second);
-		//log::info("Player has {} lives. init", lives);
+		// log::info("Player has {} lives. init", lives);
 		if (super_expert) {
 			if (!level_started) {
 				level_started = true;
 				extra_lives = 1;
 			}
 
-			//log::info("{}", extra_lives);
+			// log::info("{}", extra_lives);
 
 			m_fields->lives_text = CCLabelBMFont::create(std::to_string(lives + 1).c_str(), "gjFont59.fnt");
 			m_fields->lives_text_x = CCLabelBMFont::create("x", "gjFont59.fnt");
@@ -85,12 +85,12 @@ CCLabelBMFont* lives_bracket;
 		if (super_expert) {
 			if (!levelEnd) {
 				if (first_init) {
-					first_init = false; // fat retard rob
+					first_init = false; // fat rob
 				}
 				else {
 					if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
 				}
-				//log::info("Player has {} lives. resetLevel", lives);
+				// log::info("Player has {} lives. resetLevel", lives);
 				lives--;
 				
 				if (lives + 2 <= 0) {
@@ -101,10 +101,10 @@ CCLabelBMFont* lives_bracket;
 				else {
 					PlayLayer::resetLevel();
 				}
-				//log::info("{}", extra_lives);
+				// log::info("{}", extra_lives);
 
 				if (level_started) {
-					//log::info("level_started");
+					// log::info("level_started");
 					}
 				}
 			else PlayLayer::onQuit();
@@ -182,6 +182,10 @@ class $modify(ExpertPauseLayer, PauseLayer) {
 };
 
 class $modify(ExpertCallback, CreatorLayer) {
+	static void onModify(auto & self)
+    {
+        self.setHookPriority("CreatorLayer::init", INT64_MIN);
+    }
 
 CCSprite* expertBtnSprite;
 CCMenuItemSpriteExtra* expertButton;

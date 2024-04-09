@@ -15,15 +15,8 @@
 	"dependencies": [
         {
             "id": "geode.node-ids",
-            "version": ">=v1.7.0",
+            "version": ">=v1.8.0",
             "importance": "required"
-        }
-    ],
-    "incompatibilities": [
-        {
-            "id": "capeling.goodbye_unnecessary_buttons",
-            "importance": "breaking",
-            "version": "*"
         }
     ],
 	"resources": {
