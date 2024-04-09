@@ -1,5 +1,5 @@
 {
-	"geode": "2.0.0-beta.15",
+	"geode": "2.0.0-beta.23",
 	"gd": {
 		"win": "2.204",
 		"android": "2.205"
@@ -35,17 +35,17 @@
 			"type": "bool",
 			"default": true
 		},
-		"level-info": {
-			"name": "Level Info",
-			"description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
-			"type": "bool",
-			"default": false
-		},
 		"coin-lives": {
 			"name": "Coin Lives",
 			"description": "Gives the player lives for any coins they may pick up in a run",
 			"type": "bool",
 			"default": true
+		},
+		"level-info": {
+			"name": "Level Info",
+			"description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
+			"type": "bool",
+			"default": false
 		},
 		"skips": {
 			"name": "Skips",

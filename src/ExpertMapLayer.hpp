@@ -38,8 +38,8 @@ protected:
     void keyBackClicked() override;
 
 public:
-    virtual void levelDownloadFinished(GJGameLevel*);
-    virtual void levelDownloadFailed(int);
+    virtual void levelDownloadFinished(GJGameLevel*) override;
+    virtual void levelDownloadFailed(int) override;
 
     static ExpertMapLayer* create();
     static ExpertMapLayer* scene();
@@ -293,12 +293,12 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     fire_2->setPosition({islandSprite->getPositionX() - 137, islandSprite->getPositionY() + 30});
     fire_3->setPosition({skips_left->getPositionX(), skips_left->getPositionY() - 157});
 
-    fire_1->setOpacity(100);
+    //fire_1->setOpacity(100);
     fire_1->setScale(0.1);
-    fire_2->setOpacity(100);
+    //fire_2->setOpacity(100);
     fire_2->setScale(0.1);
     fire_3->setScaleX(2.500);
-    rain_1->setOpacity(50);
+    //rain_1->setOpacity(50);
     map_deco->addChild(fire_1, 1);
     map_deco->addChild(fire_2, 1);
     map_deco->setPosition({0,0});
