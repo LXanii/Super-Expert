@@ -19,6 +19,13 @@
             "importance": "required"
         }
     ],
+    "incompatibilities": [
+        {
+            "id": "capeling.goodbye_unnecessary_buttons",
+            "importance": "breaking",
+            "version": "*"
+        }
+    ],
 	"resources": {
         "sprites": [
             "resources/*.png"
