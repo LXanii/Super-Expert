@@ -190,8 +190,8 @@ CCMenuItemSpriteExtra* expertButton;
 		bool result = CreatorLayer::init();
 		auto director = CCDirector::sharedDirector();
 		auto size = director->getWinSize();
+		auto creatorButtons = this->getChildByID("creator-buttons-menu");
 		if (!Loader::get()->getLoadedMod("capeling.goodbye_unnecessary_buttons")) {
-			auto creatorButtons = this->getChildByID("creator-buttons-menu");
 
 			CCMenu* menu = CCMenu::create();
 	
@@ -208,7 +208,6 @@ CCMenuItemSpriteExtra* expertButton;
 			m_fields->expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
 			m_fields->expertButton->setID("super-expert-button"_spr);
 			
-			creatorButtons->addChild(m_fields->expertButton);
 		} else {
 			CCSprite* emptyBtn = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
 			m_fields->expertBtnSprite = CCSprite::create("super_expert_btn_mini.png"_spr);
@@ -218,8 +217,8 @@ CCMenuItemSpriteExtra* expertButton;
 			emptyBtn->setID("super-expert-button"_spr);
 			m_fields->expertButton = CCMenuItemSpriteExtra::create(emptyBtn, this, menu_selector(ExpertCallback::onExpert));
 			m_fields->expertButton->setPosition((emptyBtn->getContentSize().width / 2) + 2.5f, (size.height / 2));
-			this->addChild(m_fields->expertButton);
 		}
+		creatorButtons->addChild(m_fields->expertButton);
 
 		return result;
 	}
