@@ -206,11 +206,20 @@ CCMenuItemSpriteExtra* expertButton;
 			versusButton->setVisible(false);
 	
 			m_fields->expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
-			m_fields->expertButton->setID("super-expert-button");
+			m_fields->expertButton->setID("super-expert-button"_spr);
 			
 			creatorButtons->addChild(m_fields->expertButton);
 		} else {
-			
+			CCSprite* emptyBtn = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
+			emptyBtn->setScale(.75f);
+			m_fields->expertBtnSprite = CCSprite::create("super_expert_btn_mini.png"_spr);
+			m_fields->expertBtnSprite->setPosition(emptyBtn->getContentSize() / 2);
+			m_fields->expertBtnSprite->setScale(.625f);
+			emptyBtn->addChild(m_fields->expertBtnSprite);
+			emptyBtn->setID("super-expert-button"_spr);
+			m_fields->expertButton = CCMenuItemSpriteExtra::create(emptyBtn, this, menu_selector(ExpertCallback::onExpert));
+			m_fields->expertButton->setPosition(emptyBtn->getContentSize().width / 2, (size.height / 2));
+			this->addChild(m_fields->expertButton);
 		}
 
 		return result;
