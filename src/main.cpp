@@ -182,10 +182,6 @@ class $modify(ExpertPauseLayer, PauseLayer) {
 };
 
 class $modify(ExpertCallback, CreatorLayer) {
-	static void onModify(auto & self)
-    {
-        self.setHookPriority("CreatorLayer::init", INT64_MIN);
-    }
 
 CCSprite* expertBtnSprite;
 CCMenuItemSpriteExtra* expertButton;
@@ -194,24 +190,28 @@ CCMenuItemSpriteExtra* expertButton;
 		bool result = CreatorLayer::init();
 		auto director = CCDirector::sharedDirector();
 		auto size = director->getWinSize();
-		auto creatorButtons = this->getChildByID("creator-buttons-menu");
+		if (!Loader::get()->getLoadedMod("capeling.goodbye_unnecessary_buttons")) {
+			auto creatorButtons = this->getChildByID("creator-buttons-menu");
 
-		CCMenu* menu = CCMenu::create();
-
-		CCMenuItemSpriteExtra* versusButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("versus-button"));
-		CCMenuItemSpriteExtra* questButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("quests-button"));
-
-		m_fields->expertBtnSprite = CCSprite::create("super_expert_btn.png"_spr);
-		m_fields->expertBtnSprite->setScale(0.805);
-
-		m_fields->expertButton = CCMenuItemSpriteExtra::create(m_fields->expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
-
-		versusButton->setVisible(false);
-
-		m_fields->expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
-		m_fields->expertButton->setID("super-expert-button");
-		
-		creatorButtons->addChild(m_fields->expertButton);
+			CCMenu* menu = CCMenu::create();
+	
+			CCMenuItemSpriteExtra* versusButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("versus-button"));
+			CCMenuItemSpriteExtra* questButton = reinterpret_cast<CCMenuItemSpriteExtra*>(creatorButtons->getChildByID("quests-button"));
+	
+			m_fields->expertBtnSprite = CCSprite::create("super_expert_btn.png"_spr);
+			m_fields->expertBtnSprite->setScale(0.805);
+	
+			m_fields->expertButton = CCMenuItemSpriteExtra::create(m_fields->expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
+	
+			versusButton->setVisible(false);
+	
+			m_fields->expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
+			m_fields->expertButton->setID("super-expert-button");
+			
+			creatorButtons->addChild(m_fields->expertButton);
+		} else {
+			
+		}
 
 		return result;
 	}
