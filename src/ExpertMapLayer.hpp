@@ -71,6 +71,7 @@ public:
     CCMenu* map_deco;
     CCMenuItemSpriteExtra* startBtn;
     LoadingCircle* loading_circle;
+    EventListener<web::WebTask> webreq;
 };
 
 void ExpertMapLayer::keyBackClicked() {
@@ -462,19 +463,19 @@ void ExpertMapLayer::downloadLevels() {
     map_deco->setVisible(false);
     if (skips != Mod::get()->getSettingValue<int64_t>("skips")) skips_left->setString(fmt::format("Skips: {}/{}", skips, Mod::get()->getSettingValue<int64_t>("skips")).c_str());
 
-    web::AsyncWebRequest()
-        .userAgent("")
-		.postRequest()
-		.bodyRaw(fmt::format("diff=5&type=4&page={}&len=5&secret=Wmfd2893gb7", rand() % 3040))
-        .fetch("http://www.boomlings.com/database/getGJLevels21.php")
-        .text()
-        .then([this](std::string const& resultat) {
-			//log::info("yay: {}", resultat);
+    auto req = web::WebRequest();
+    req.userAgent("");
+    req.bodyString(fmt::format("diff=5&type=4&page={}&len=5&secret=Wmfd2893gb7", rand() % 3040));
+    webreq.bind([this](web::WebTask::Event* e) { // dude fuck this new web request api holy shit
+        if (web::WebResponse* res = e->getValue()) {
+            std::string resultat = res->string().unwrap();
             ondownloadfinished(resultat);
-		})
-        .expect([](std::string const& error) {
-			log::info("nay: {}", error);
-        });
+        }
+        else if (e->isCancelled()) {
+            log::info("error");
+        }
+    });
+    webreq.setFilter(req.post("http://www.boomlings.com/database/getGJLevels21.php"));
 }
 
 void ExpertMapLayer::ondownloadfinished(std::string const& string) {
