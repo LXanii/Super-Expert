@@ -1,3 +1,7 @@
+# 1.0.1
+
+- 2.206/64 bit release
+
 # 1.0.0
 
 - Added Widescreen support
