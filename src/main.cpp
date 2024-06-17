@@ -26,10 +26,11 @@ extern int current_level;
 extern int ids;
 
 class $modify(PlayLayer) {
-
-CCLabelBMFont* lives_text;
-CCLabelBMFont* lives_text_x;
-CCLabelBMFont* lives_bracket;
+	struct Fields {
+        CCLabelBMFont* lives_text;
+		CCLabelBMFont* lives_text_x;
+		CCLabelBMFont* lives_bracket;
+    };
 
 	bool init(GJGameLevel* level, bool first, bool second) {
 		bool result = PlayLayer::init(level, first, second);
@@ -183,8 +184,10 @@ class $modify(ExpertPauseLayer, PauseLayer) {
 
 class $modify(ExpertCallback, CreatorLayer) {
 
-CCSprite* expertBtnSprite;
-CCMenuItemSpriteExtra* expertButton;
+	struct Fields {
+		CCSprite* expertBtnSprite;
+		CCMenuItemSpriteExtra* expertButton;
+	};
 
 	bool init() {
 		bool result = CreatorLayer::init();
