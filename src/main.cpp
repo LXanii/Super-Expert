@@ -204,8 +204,11 @@ class $modify(ExpertCallback, CreatorLayer) {
 		m_fields->expertBtnSprite->setScale(0.805);
 
 		m_fields->expertButton = CCMenuItemSpriteExtra::create(m_fields->expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
-
 		versusButton->setVisible(false);
+
+		if(Mod::get()->getSettingValue<bool>("show-versus-button") && Loader::get()->isModLoaded("alphalaneous.pages_api")){
+			versusButton->setVisible(true);
+		}
 
 		m_fields->expertButton->setPosition({questButton->getPositionX() + 92, questButton->getPositionY() - 2.4f});
 		m_fields->expertButton->setID("super-expert-button");

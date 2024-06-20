@@ -1,5 +1,5 @@
 {
-	"geode": "3.0.0-beta.1",
+	"geode": "3.0.0-beta.4",
 	"gd": {
 		"win": "2.206",
 		"android": "2.206"
@@ -69,6 +69,12 @@
 			"default": 30,
 			"min": 0,
 			"max": 99
+		},
+		"show-versus-button": {
+			"name": "Show Versus Button",
+			"description": "Show the versus button. Only works with Pages API installed",
+			"type": "bool",
+			"default": false
 		}
 	}
 }
