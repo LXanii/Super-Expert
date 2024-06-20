@@ -70,11 +70,11 @@
 			"min": 0,
 			"max": 99
 		},
-		"hide-versus-button": {
-			"name": "Hide Versus Button",
-			"description": "Hide the versus button, use only if the button has been moved somewhere else",
+		"show-versus-button": {
+			"name": "Show Versus Button",
+			"description": "Hide the versus button, you can use only if the button has been moved via Pages API",
 			"type": "bool",
-			"default": true
+			"default": false
 		}
 	}
 }
