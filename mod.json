@@ -72,7 +72,7 @@
 		},
 		"show-versus-button": {
 			"name": "Show Versus Button",
-			"description": "Hide the versus button, you can use only if the button has been moved via Pages API",
+			"description": "Show the versus button. Only works with Pages API installed",
 			"type": "bool",
 			"default": false
 		}
