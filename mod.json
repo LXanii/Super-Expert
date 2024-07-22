@@ -1,80 +1,81 @@
 {
-	"geode": "3.2.0",
-	"gd": {
-		"win": "2.206",
-		"android": "2.206"
-		},
-	"version": "v1.0.1",
-	"id": "xanii.super_expert",
-	"name": "Super Expert",
-	"developers": [
-		"Xanii",
-		"AdyaGD"
-	],
-	"description": "Mario Maker's 'Super Expert Run' in Geometry Dash!",
-	"dependencies": [
-        {
-            "id": "geode.node-ids",
-            "version": ">=v1.7.0",
-            "importance": "required"
-        }
+  "geode": "3.3.0",
+  "gd": {
+    "win": "2.206",
+    "android": "2.206"
+  },
+  "version": "v1.0.2",
+  "id": "xanii.super_expert",
+  "name": "Super Expert",
+  "developers": [
+    "Xanii",
+    "AdyaGD",
+    "The Bearodactyl"
+  ],
+  "description": "Mario Maker's 'Super Expert Run' in Geometry Dash!",
+  "dependencies": [
+    {
+      "id": "geode.node-ids",
+      "version": ">=v1.7.0",
+      "importance": "required"
+    }
+  ],
+  "incompatibilities": [
+    {
+      "id": "capeling.goodbye_unnecessary_buttons",
+      "importance": "breaking",
+      "version": "*"
+    }
+  ],
+  "resources": {
+    "sprites": [
+      "resources/*.png"
     ],
-    "incompatibilities": [
-        {
-            "id": "capeling.goodbye_unnecessary_buttons",
-            "importance": "breaking",
-            "version": "*"
-        }
-    ],
-	"resources": {
-        "sprites": [
-            "resources/*.png"
-        ],
-		"files": [
-			"resources/*.mp3"
-		]
+    "files": [
+      "resources/*.mp3"
+    ]
+  },
+  "repository": "https://github.com/LXanii/Super-Expert",
+  "settings": {
+    "map-music": {
+      "name": "Map Music",
+      "description": "Toggle on or off the super expert music whilst in the map",
+      "type": "bool",
+      "default": true
     },
-	"repository": "https://github.com/LXanii/Super-Expert",
-	"settings": {
-		"map-music": {
-			"name": "Map Music",
-			"description": "Toggle on or off the super expert music whilst in the map",
-			"type": "bool",
-			"default": true
-		},
-		"coin-lives": {
-			"name": "Coin Lives",
-			"description": "Gives the player lives for any coins they may pick up in a run",
-			"type": "bool",
-			"default": true
-		},
-		"level-info": {
-			"name": "Level Info",
-			"description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
-			"type": "bool",
-			"default": false
-		},
-		"skips": {
-			"name": "Skips",
-			"description": "Sets the amount of skips allowed in a run.\n<cr>SET THIS BEFORE A RUN</c>",
-			"type": "int",
-			"default": 3,
-			"min": 0,
-			"max": 99
-		},
-		"lives": {
-			"name": "Lives",
-			"description": "Sets the amount of lives per run.\n<cr>SET THIS BEFORE A RUN</c>",
-			"type": "int",
-			"default": 30,
-			"min": 0,
-			"max": 99
-		},
-		"show-versus-button": {
-			"name": "Show Versus Button",
-			"description": "Show the versus button. Only works with Pages API installed",
-			"type": "bool",
-			"default": false
-		}
-	}
+    "coin-lives": {
+      "name": "Coin Lives",
+      "description": "Gives the player lives for any coins they may pick up in a run",
+      "type": "bool",
+      "default": true
+    },
+    "level-info": {
+      "name": "Level Info",
+      "description": "Opens the level page instead of sending straight into the level (useful for downloading songs)",
+      "type": "bool",
+      "default": false
+    },
+    "skips": {
+      "name": "Skips",
+      "description": "Sets the amount of skips allowed in a run.\n<cr>SET THIS BEFORE A RUN</c>",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 99
+    },
+    "lives": {
+      "name": "Lives",
+      "description": "Sets the amount of lives per run.\n<cr>SET THIS BEFORE A RUN</c>",
+      "type": "int",
+      "default": 30,
+      "min": 0,
+      "max": 99
+    },
+    "show-versus-button": {
+      "name": "Show Versus Button",
+      "description": "Show the versus button. Only works with Pages API installed",
+      "type": "bool",
+      "default": false
+    }
+  }
 }
