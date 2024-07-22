@@ -1,0 +1,8 @@
+ColumnLimit: 100000 # no random line breaks
+AllowShortFunctionsOnASingleLine: Empty # make the function bodies easier to see
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLambdasOnASingleLine: All
+PointerAlignment: Left # More consistent pointer alignment = more readability
+InsertBraces: true # braces are good. no braces is bad.
+PPIndentWidth: 0 # why do people indent preprocessors. it genuinely confuses me.
+BinPackParameters: true # single line for all function parameters makes for cleaner code
