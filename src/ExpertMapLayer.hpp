@@ -7,7 +7,8 @@
 #include <random>
 #include <string>
 
-#include "ExpertStartPopup.cpp"
+#include "ExpertStartPopup.hpp"
+#include "ExpertMapLayer.hpp"
 #include "ExpertStartupLayer.hpp"
 
 using namespace geode::prelude;
@@ -40,6 +41,7 @@ protected:
 public:
     virtual void levelDownloadFinished(GJGameLevel*) override;
     virtual void levelDownloadFailed(int) override;
+    void confirmExpertRun(CCObject*);
 
     static ExpertMapLayer* create();
     static ExpertMapLayer* scene();
@@ -47,7 +49,6 @@ public:
 
     void onGoBack(CCObject*);
     void startExpertRun(CCObject*);
-    void confirmExpertRun(CCObject*);
     void downloadLevel(CCObject*);
     void openSettings(CCObject*);
     void openDevs(CCObject*);
