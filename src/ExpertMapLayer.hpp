@@ -88,7 +88,7 @@ void ExpertMapLayer::downloadLevel(CCObject* self) {
 
     // put sfx here
     if (!Mod::get()->getSettingValue<bool>("level-info")) {
-        FMODAudioEngine::sharedEngine()->stopAllMusic();
+        FMODAudioEngine::sharedEngine()->stopAllMusic(false);
         FMODAudioEngine::sharedEngine()->stopAllActions();
         FMODAudioEngine::sharedEngine()->stopAllEffects();
         FMODAudioEngine::sharedEngine()->playMusic("playSound_01.ogg", false, 1, 0);
@@ -122,7 +122,7 @@ bool ExpertMapLayer::init() { //beware, this code is dog shit holy fuck
     }
 
     if (Mod::get()->getSettingValue<bool>("map-music")) {
-        FMODAudioEngine::sharedEngine()->stopAllMusic();
+        FMODAudioEngine::sharedEngine()->stopAllMusic(false);
         FMODAudioEngine::sharedEngine()->stopAllActions();
         FMODAudioEngine::sharedEngine()->stopAllEffects();
 
@@ -535,14 +535,14 @@ void ExpertMapLayer::onGoBack(CCObject*) {
             expertReset(); 
             this->onGoBack(nullptr);
             CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
-            FMODAudioEngine::sharedEngine()->stopAllMusic();
+            FMODAudioEngine::sharedEngine()->stopAllMusic(false);
             FMODAudioEngine::sharedEngine()->stopAllActions();
             FMODAudioEngine::sharedEngine()->stopAllEffects();
         }
         });
     else if (!super_expert) {
         CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
-        FMODAudioEngine::sharedEngine()->stopAllMusic();
+        FMODAudioEngine::sharedEngine()->stopAllMusic(false);
         FMODAudioEngine::sharedEngine()->stopAllActions();
         FMODAudioEngine::sharedEngine()->stopAllEffects();
     }
@@ -575,7 +575,7 @@ ExpertMapLayer* ExpertMapLayer::scene() {
 
 ExpertMapLayer* ExpertMapLayer::replaceScene() {
     
-    FMODAudioEngine::sharedEngine()->stopAllMusic();
+    FMODAudioEngine::sharedEngine()->stopAllMusic(false);
     FMODAudioEngine::sharedEngine()->stopAllActions();
     FMODAudioEngine::sharedEngine()->stopAllEffects();
 
