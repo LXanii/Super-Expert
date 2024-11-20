@@ -2,8 +2,9 @@
 	"geode": "4.0.0",
 	"gd": {
 		"win": "2.2074",
-		"android": "2.2074"
-		},
+		"android": "2.2074",
+		"mac": "2.2074"
+	},
 	"version": "v1.0.2",
 	"id": "xanii.super_expert",
 	"name": "Super Expert",

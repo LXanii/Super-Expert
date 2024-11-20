@@ -7,23 +7,16 @@
 #include <Geode/modify/GJBaseGameLayer.hpp>
 
 #include "ExpertMapLayer.hpp"
+#include "ExpertManager.hpp"
 
 #include <string>
 
 using namespace geode::prelude;
 
 bool first_init = true;
-extern int lives;
-extern bool super_expert;
 int extra_lives;
 bool level_started = false;
-bool downloading = false;
-bool levelEnd = false;
 int coin_lives = 0;
-
-extern int skips;
-extern int current_level;
-extern int ids;
 
 class $modify(PlayLayer) {
 	struct Fields {
@@ -33,9 +26,11 @@ class $modify(PlayLayer) {
     };
 
 	bool init(GJGameLevel* level, bool first, bool second) {
-		bool result = PlayLayer::init(level, first, second);
-		//log::info("Player has {} lives. init", lives);
-		if (super_expert) {
+		if (!PlayLayer::init(level, first, second))
+			return false;
+
+		int lives = Mod::get()->getSavedValue<int64_t>("lives-left");
+		if (ExpertManager::get().running) {
 			if (!level_started) {
 				level_started = true;
 				extra_lives = 1;
@@ -77,46 +72,38 @@ class $modify(PlayLayer) {
 			addChild(m_fields->lives_text_x, 100);
 			
 		}
-		return result;
 
+		return true;
 	}
 
 	void resetLevel() {
+		int lives = Mod::get()->getSavedValue<int64_t>("lives-left");
+
 		coin_lives = 0;
-		if (super_expert) {
-			if (!levelEnd) {
+		if (ExpertManager::get().running) {
+			if (!ExpertManager::get().levelEnd) {
 				if (first_init) {
 					first_init = false; // fat retard rob
-				}
-				else {
+				} else {
 					if (lives >= 0) m_fields->lives_text->setString(std::to_string(lives).c_str());
 				}
 				//log::info("Player has {} lives. resetLevel", lives);
-				lives--;
+				Mod::get()->setSavedValue<int64_t>("lives-left", lives - 1);
 				
-				if (lives + 2 <= 0) {
-					super_expert = false;
+				if ((lives - 1) + 2 <= 0) {
+					ExpertManager::get().running = false;
 					first_init = true;
-					ExpertMapLayer::replaceScene();
-				}
-				else {
-					PlayLayer::resetLevel();
-				}
-				//log::info("{}", extra_lives);
+					ExpertMapLayer::create()->replaceScene();
+				} else PlayLayer::resetLevel();
 
-				if (level_started) {
-					//log::info("level_started");
-					}
-				}
-			else PlayLayer::onQuit();
-			}
-		else PlayLayer::resetLevel();
-		} 
+			} else PlayLayer::onQuit();
+		} else PlayLayer::resetLevel();
+	} 
 
 	void onQuit() {
 		first_init = true;
-		if (super_expert) {
-			ExpertMapLayer::replaceScene();
+		if (ExpertManager::get().running) {
+			ExpertMapLayer::create()->replaceScene();
 		}
 		else PlayLayer::onQuit();
 	}
@@ -124,8 +111,8 @@ class $modify(PlayLayer) {
 
 class $modify(LevelInfoLayer) {
 	void onBack(CCObject* obj) {
-		if (super_expert) {
-			ExpertMapLayer::replaceScene();
+		if (ExpertManager::get().running) {
+			ExpertMapLayer::create()->replaceScene();
 			return;
 		}
 
@@ -133,8 +120,11 @@ class $modify(LevelInfoLayer) {
 	}
 
 	void onPlay(CCObject* obj) {
-		if (super_expert) {
-			ExpertStartupLayer::scene(m_level);
+		if (ExpertManager::get().running) {
+			auto layer = ExpertStartupLayer::create(m_level);
+			auto scene = CCScene::create();
+			scene->addChild(layer);
+			CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
 			return;
 		}
 		LevelInfoLayer::onPlay(obj);
@@ -143,14 +133,14 @@ class $modify(LevelInfoLayer) {
 
 class $modify(ExpertPauseLayer, PauseLayer) {
 	void onPracticeMode(cocos2d::CCObject* sender) {
-		if (super_expert) FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
+		if (ExpertManager::get().running) FLAlertLayer::create("Unavailable", "<cg>Practice Mode</c> isn't available during a <cp>Super Expert</c> run!", "OK")->show();
 		else PauseLayer::onPracticeMode(sender);
 	}
 
 	void customSetup() {
         PauseLayer::customSetup();
 
-		if (!super_expert) return;
+		if (!ExpertManager::get().running) return;
         
         auto centerButtons = this->getChildByID("center-button-menu");
         CCMenuItemSpriteExtra* exitButton = reinterpret_cast<CCMenuItemSpriteExtra*>(centerButtons->getChildByID("exit-button"));
@@ -158,39 +148,43 @@ class $modify(ExpertPauseLayer, PauseLayer) {
         CCSprite* skipsSprite = CCSprite::create("skipBtn.png"_spr);
         CCMenuItemSpriteExtra* skipsBtn = CCMenuItemSpriteExtra::create(skipsSprite, this, menu_selector(ExpertPauseLayer::skipLevel));
 
-        skipsBtn->setID("xanii.super_expert/skip-button");
+        skipsBtn->setID("skip-button"_spr);
         skipsBtn->setPosition({-237.750f,-80});
         centerButtons->addChild(skipsBtn);
     }
 
 	void skipLevel(CCObject* obj) {
+		int lives = Mod::get()->getSavedValue<int64_t>("lives-left");
+		int skips = Mod::get()->getSavedValue<int64_t>("skips-left");
+		int current_level = Mod::get()->getSavedValue<int64_t>("current-level");
+
 		if (skips <= 0) {
 			FLAlertLayer::create("SKIP", "You don't have any <cr>skips</c> left!", "OK")->show();
 			return;
 		}
-		std::string plural = " ";
-		if (skips > 1) plural = "s ";
-		createQuickPopup("SKIP", fmt::format("Would you like to <cr>skip</c> this <cp>level</c>?\nYou have <cy>{} skip{}left</c>.", skips, plural), "NO", "YES", [this, obj](FLAlertLayer*, bool btn2) {
-        if (btn2) {
-            current_level++;
-			if (current_level < 15) downloading = true;
-			skips--;
-			lives++; // compensation
-			PauseLayer::onQuit(obj);
-        }
+
+		createQuickPopup("SKIP", fmt::format("Would you like to <cr>skip</c> this <cp>level</c>?\nYou have <cy>{} skip{}left</c>.", skips, (skips > 1 ? "s " : " ")), "NO", "YES", [this, obj, lives, skips, current_level](FLAlertLayer*, bool btn2) {
+			if (btn2) {
+				Mod::get()->setSavedValue<int64_t>("current-level", current_level + 1);
+				if ((current_level + 1) < 15) ExpertManager::get().downloading = true;
+				Mod::get()->setSavedValue<int64_t>("skips-left", skips - 1);
+				Mod::get()->setSavedValue<int64_t>("lives-left", lives + 1); // compensation
+				PauseLayer::onQuit(obj);
+			}
         });
 	}
 };
 
 class $modify(ExpertCallback, CreatorLayer) {
-
 	struct Fields {
 		CCSprite* expertBtnSprite;
 		CCMenuItemSpriteExtra* expertButton;
 	};
 
 	bool init() {
-		bool result = CreatorLayer::init();
+		if (!CreatorLayer::init())
+			return false;
+
 		auto director = CCDirector::sharedDirector();
 		auto size = director->getWinSize();
 		auto creatorButtons = this->getChildByID("creator-buttons-menu");
@@ -206,7 +200,7 @@ class $modify(ExpertCallback, CreatorLayer) {
 		m_fields->expertButton = CCMenuItemSpriteExtra::create(m_fields->expertBtnSprite, this, menu_selector(ExpertCallback::onExpert));
 		versusButton->setVisible(false);
 
-		if(Mod::get()->getSettingValue<bool>("show-versus-button") && Loader::get()->isModLoaded("alphalaneous.pages_api")){
+		if(Mod::get()->getSettingValue<bool>("show-versus-button") && Loader::get()->isModLoaded("alphalaneous.pages_api")) {
 			versusButton->setVisible(true);
 		}
 
@@ -215,26 +209,34 @@ class $modify(ExpertCallback, CreatorLayer) {
 		
 		creatorButtons->addChild(m_fields->expertButton);
 
-		return result;
+		return true;
 	}
 
 	void onExpert(CCObject*) {
-        ExpertMapLayer::scene();
+        auto layer = ExpertMapLayer::create();
+		auto scene = CCScene::create();
+		scene->addChild(layer);
+		auto transition = CCTransitionFade::create(0.5f, scene);
+		CCDirector::sharedDirector()->pushScene(transition);
     }
 };
 
 class $modify(EndLevelLayer) {
 	void showLayer(bool p0) { // find whatever gets called when u hit the end
 		EndLevelLayer::showLayer(p0);
-		levelEnd = true;
+
+		int lives = Mod::get()->getSavedValue<int64_t>("lives-left");
+		int current_level = Mod::get()->getSavedValue<int64_t>("current-level");
 		PlayLayer* pl = PlayLayer::get(); // changed to make porting to mac easier :]
-		if (super_expert) {
+
+		ExpertManager::get().levelEnd = true;
+		if (ExpertManager::get().running) {
 			log::info("coin lives: {}", coin_lives);
 			level_started = false;
-			lives += 1; // compensate for completion
-			if (ids == pl->m_level->m_levelID) current_level++;
-			if (current_level < 15) downloading = true;
-			if (Mod::get()->getSettingValue<bool>("coin-lives")) lives += coin_lives;
+			Mod::get()->setSavedValue<int64_t>("lives-left", lives + 1); // compensate for completion
+			if (ExpertManager::get().ids == pl->m_level->m_levelID) Mod::get()->setSavedValue<int64_t>("current-level", current_level + 1);
+			if ((current_level + 1) < 15) ExpertManager::get().downloading = true;
+			if (Mod::get()->getSettingValue<bool>("coin-lives")) Mod::get()->setSavedValue<int64_t>("lives", Mod::get()->getSavedValue<int64_t>("lives") + coin_lives);
 			coin_lives = 0;
 		}
 	}
@@ -242,7 +244,7 @@ class $modify(EndLevelLayer) {
 
 class $modify(GJBaseGameLayer) { // 1329 user coin pickup | 0x19d100 address make sure to submit l8r
 	void pickupItem(EffectGameObject *p0) {
-		if (super_expert) {
+		if (ExpertManager::get().running) {
         	if (p0->m_objectID == 1329) coin_lives++;
 		}
         GJBaseGameLayer::pickupItem(p0);
