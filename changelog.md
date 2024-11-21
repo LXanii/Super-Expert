@@ -1,3 +1,11 @@
+# 2.0.0
+
+- Added new run start menu
+- Added seeded runs to play with friends
+- Bug fixes
+- Crash fixes
+- Entire code rewritten (Thx ninXout)
+
 # 1.0.1
 
 - 2.206/64 bit release
